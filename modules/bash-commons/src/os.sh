@@ -57,3 +57,13 @@ function os_command_is_installed {
   local readonly name="$1"
   command -v "$name" > /dev/null
 }
+
+# Get the username of the current OS user
+function os_get_current_users_name {
+  id -u -n
+}
+
+# Get the name of the primary group for the current OS user
+function os_get_current_users_group {
+  id -g -n
+}
