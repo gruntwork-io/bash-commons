@@ -147,3 +147,15 @@ Every function should be tested:
     docker build -t gruntwork/bash-commons-circleci-tests .
     docker push gruntwork/bash-commons-circleci-tests
     ```
+
+
+
+
+## TODO
+
+1. Add automated tests for `aws.sh` and `aws-wrapper.sh`. We have not tested these as they require either running an
+   EC2 Instance or run something like [LocalStack](https://github.com/localstack/localstack).
+
+1. Add automated tests for `assert_uid_is_root_or_sudo` and `os_user_is_root_or_sudo`. These methods depend on the
+   current user, which is different in CircleCI (which runs in a Docker image as sudo) and local dev. We'll probably
+   need to run all tests in Docker eventually.
