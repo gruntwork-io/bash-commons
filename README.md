@@ -78,8 +78,13 @@ Here's an overview of the modules available in `bash-commons`:
 
 The code in `bash-commons` follows the following principles:
 
+1. [Code style](#code-style)
+1. [Everything is a function](#everything-is-a-function)
+1. [Namespacing](#namespacing)
+1. [Testing](#testing)
 
-### Coding style
+
+### Code style
 
 All the code should follow mainly follow the [Google Shell Style Guide](https://google.github.io/styleguide/shell.xml).
 In particular:
@@ -116,3 +121,29 @@ Bash does not support namespacing, so we fake it using a convention on the funct
 
 For readability, that means you should typically give files a name that is a singular noun. For example, `log.sh`
 instead of `logging.sh` and `string.sh` instead of `strings.sh`.
+
+
+### Testing
+
+Every function should be tested:
+
+* Automated tests are in the [test](/test) folder.
+
+* We use [Bats](https://github.com/sstephenson/bats) as our unit test framework for Bash code. Note: Bats has not been
+  maintained the last couple years, so we may need to change to the [bats-core](https://github.com/bats-core/bats-core)
+  fork at some point (see [#150](https://github.com/sstephenson/bats/issues/150)).
+
+* [Install Bats](https://github.com/sstephenson/bats/wiki/Install-Bats-Using-a-Package).
+
+* To run all the tests: `bats test`.
+
+* To run one test file: `bats test/array.bats`.
+
+* CircleCI will run all Bats tests automatically after every build. The build runs in the Docker image defined in
+  [.circleci/Dockerfile](/.circleci/Dockerfile). To build a new version of the image:
+
+    ```bash
+    cd .circleci
+    docker build -t gruntwork/bash-commons-circleci-tests .
+    docker push gruntwork/bash-commons-circleci-tests
+    ```

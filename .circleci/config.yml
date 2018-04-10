@@ -1,0 +1,8 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: gruntwork/bash-commons-circleci-tests
+    steps:
+      - checkout
+      - run: bats test
