@@ -9,6 +9,12 @@ flunk() {
   return 1
 }
 
+# Adapted from https://unix.stackexchange.com/a/230676/215969
+unique_id() {
+  local readonly length="$1"
+  head /dev/urandom | tr -dc A-Za-z0-9 | head -c "$length" ; echo ''
+}
+
 assert_success() {
   if [ "$status" -ne 0 ]; then
     flunk "command failed with exit status $status"
