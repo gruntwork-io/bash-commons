@@ -1,8 +1,33 @@
 # Bash Commons
 
 This repo contains a collection of reusable Bash functions for handling common tasks such as logging, assertions,
-string manipulation, and more. It is our attempt to bring a little more sanity, predictability, and coding reuse to
-our Bash scripts.
+string manipulation, and more. It is our attempt to bring a little more sanity, predictability, and coding reuse to our
+Bash scripts. All the code has thorough automated tests and is packaged into functions, so you can safely import it
+into your bash scripts using `source`.
+
+
+
+
+## Examples
+
+Once you have `bash-commons` installed (see the [install instructions](#install)), you use `source` to import the
+modules and start calling the functions within them:
+
+```bash
+source /opt/gruntwork/bash-commons/log.sh
+source /opt/gruntwork/bash-commons/assert.sh
+source /opt/gruntwork/bash-commons/os.sh
+
+log_info "Hello, World!"
+
+assert_not_empty "--foo" "$foo" "You must provide a value for the --foo parameter."
+
+if os_is_ubuntu "16.04"; then
+  log_info "This script is running on Ubuntu 16.04!"
+elif os_is_centos; then
+  log_info "This script is running on CentOS!"
+fi
+```
 
 
 
@@ -21,11 +46,28 @@ cp -r bash-commons/modules/bash-commons/src /opt/gruntwork/bash-commons
 ```
 
 Another option is to install the [Gruntwork Installer](https://github.com/gruntwork-io/gruntwork-installer) and to
-let it do the work for your (default instlal location is `/opt/gruntwork/bash-commons`):
+let it do the work for your:
 
 ```bash
-gruntwork-install --repo https://github.com/gruntwork-io/bash-commons --module-name bash-commons --tag <VERSION>
+gruntwork-install \
+  --repo https://github.com/gruntwork-io/bash-commons \
+  --module-name bash-commons \
+  --tag <VERSION>
 ```
+
+The default default location is `/opt/gruntwork/bash-commons`, but you can override that using the `dir` param, and
+override the owner of the install dir using the `owner` and `group` params:
+
+```bash
+gruntwork-install \
+  --repo https://github.com/gruntwork-io/bash-commons \
+  --module-name bash-commons \
+  --tag <VERSION> \
+  --module-param dir=/foo/bar \
+  --module-param owner=my-os-username \
+  --module-param group=my-os-group
+```
+
 
 Now you can use `source` to "import" the modules you need and use them in your code:
 
