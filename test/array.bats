@@ -33,6 +33,11 @@ load "test-helper"
   assert_success
 }
 
+@test "array_contains on array of length 3 with spaces in array values" {
+  run array_contains "foo" "foo bar" "baz blah"
+  assert_failure
+}
+
 @test "array_join on empty array" {
   run array_join ","
   assert_success

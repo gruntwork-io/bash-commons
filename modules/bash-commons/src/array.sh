@@ -6,7 +6,7 @@ set -e
 function array_contains {
   local readonly needle="$1"
   shift
-  local readonly haystack=($@)
+  local readonly haystack=("$@")
 
   local item
   for item in "${haystack[@]}"; do

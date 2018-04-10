@@ -61,7 +61,7 @@ function assert_value_in_list {
   local readonly arg_name="$1"
   local readonly arg_value="$2"
   shift 2
-  local readonly list=($@)
+  local readonly list=("$@")
 
   if ! array_contains "$arg_value" "${list[@]}"; then
     log_error "'$arg_value' is not a valid value for $arg_name. Must be one of: [${list[@]}]."

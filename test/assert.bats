@@ -119,6 +119,11 @@ load "test-helper"
   assert_success
 }
 
+@test "assert_value_in_list list of length 3, with spaces in the values, no match" {
+  run assert_value_in_list "--foo" "foo" "foo bar" "baz blah"
+  assert_failure
+}
+
 @test "assert_uid_is_root_or_sudo as root" {
   run assert_uid_is_root_or_sudo
   assert_success
