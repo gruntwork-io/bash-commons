@@ -35,3 +35,27 @@ load "test-helper"
   run array_contains "foo" "bar" "foo" "foo"
   assert_success
 }
+
+@test "array_join on empty array" {
+  run array_join ","
+  assert_success
+  assert_output ""
+}
+
+@test "array_join on array of length 1" {
+  run array_join "," "foo"
+  assert_success
+  assert_output "foo"
+}
+
+@test "array_join on array of length 3" {
+  run array_join "," "foo" "bar" "baz"
+  assert_success
+  assert_output "foo,bar,baz"
+}
+
+@test "array_join on array of length 3 with multi character separator" {
+  run array_join " == " "foo" "bar" "baz"
+  assert_success
+  assert_output "foo == bar == baz"
+}
