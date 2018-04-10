@@ -30,6 +30,11 @@ function os_is_centos {
   grep -q "CentOS Linux release $version" /etc/*release
 }
 
+# Returns true (0) if this is an OS X server or false (1) otherwise.
+function os_is_darwin {
+  [[ $(uname -s) == "Darwin" ]]
+}
+
 # Validate that the given file has the given checksum of the given checksum type, where type is one of "md5" or
 # "sha256".
 function os_validate_checksum {

@@ -1,0 +1,206 @@
+#!/usr/bin/env bats
+
+readonly file_module_path="$BATS_TEST_DIRNAME/../modules/bash-commons/src/file.sh"
+source "$file_module_path"
+load "test-helper"
+
+@test "file_exists on non-existent file" {
+  run file_exists "not-a-real-file"
+  assert_failure
+}
+
+@test "file_exists on real file" {
+  run file_exists "$file_module_path"
+  assert_success
+}
+
+@test "file_contains_text on non-existent file" {
+  run file_contains_text "foo" "not-a-real-file"
+  assert_failure
+}
+
+@test "file_contains_text no match" {
+  run file_contains_text "this text is not in the file" "$file_module_path"
+  assert_failure
+}
+
+@test "file_contains_text match" {
+  run file_contains_text "file_contains_text" "$file_module_path"
+  assert_success
+}
+
+@test "file_contains_text regex match" {
+  run file_contains_text "file_.*_text" "$file_module_path"
+  assert_success
+}
+
+@test "file_append_text once" {
+  local readonly tmp_file=$(mktemp)
+  local readonly text="foo"
+
+  run file_append_text "$text" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  assert_equal "$text" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_append_text multiple times" {
+  local readonly tmp_file=$(mktemp)
+  local readonly text="foo"
+  local readonly expected=$(echo -e "$text\n$text\n$text")
+
+  run file_append_text "$text" "$tmp_file"
+  assert_success
+
+  run file_append_text "$text" "$tmp_file"
+  assert_success
+
+  run file_append_text "$text" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_replace_text empty file" {
+  local readonly tmp_file=$(mktemp)
+  local readonly original_regex="foo"
+  local readonly replacement="bar"
+
+  run file_replace_text "$original_regex" "$replacement" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  local readonly expected=""
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_replace_text non empty file, no match" {
+  local readonly tmp_file=$(mktemp)
+  local readonly original_regex="foo"
+  local readonly replacement="bar"
+  local readonly file_contents="not a match"
+
+  echo "$file_contents" > "$tmp_file"
+
+  run file_replace_text "$original_regex" "$replacement" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  local readonly expected="$file_contents"
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_replace_text non empty file, exact match" {
+  local readonly tmp_file=$(mktemp)
+  local readonly original_regex="abc foo def"
+  local readonly replacement="bar"
+  local readonly file_contents="abc foo def"
+
+  echo "$file_contents" > "$tmp_file"
+
+  run file_replace_text "$original_regex" "$replacement" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  local readonly expected="$replacement"
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_replace_text non empty file, regex match" {
+  local readonly tmp_file=$(mktemp)
+  local readonly original_regex=".*foo.*"
+  local readonly replacement="bar"
+  local readonly file_contents="abc foo def"
+
+  echo "$file_contents" > "$tmp_file"
+
+  run file_replace_text "$original_regex" "$replacement" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  local readonly expected="$replacement"
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_replace_or_append_text empty file" {
+  local readonly tmp_file=$(mktemp)
+  local readonly original_regex="foo"
+  local readonly replacement="bar"
+
+  run file_replace_or_append_text "$original_regex" "$replacement" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  local readonly expected="$replacement"
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_replace_or_append_text non empty file, no match" {
+  local readonly tmp_file=$(mktemp)
+  local readonly original_regex="foo"
+  local readonly replacement="bar"
+  local readonly file_contents="not a match"
+
+  echo "$file_contents" > "$tmp_file"
+
+  run file_replace_or_append_text "$original_regex" "$replacement" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  local readonly expected=$(echo -e "$file_contents\n$replacement")
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_replace_or_append_text non empty file, exact match" {
+  local readonly tmp_file=$(mktemp)
+  local readonly original_regex="foo"
+  local readonly replacement="bar"
+  local readonly file_contents="foo"
+
+  echo "$file_contents" > "$tmp_file"
+
+  run file_replace_or_append_text "$original_regex" "$replacement" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  local readonly expected=$(echo -e "$replacement")
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_replace_or_append_text non empty file, regex match one line" {
+  local readonly tmp_file=$(mktemp)
+  local readonly original_regex=".*foo.*"
+  local readonly replacement="bar"
+  local readonly file_contents=$(echo -e "abc\nblah foo blah\nbaz")
+
+  echo "$file_contents" > "$tmp_file"
+
+  run file_replace_or_append_text "$original_regex" "$replacement" "$tmp_file"
+  assert_success
+
+  local readonly actual=$(cat "$tmp_file")
+  local readonly expected=$(echo -e "abc\n$replacement\nbaz")
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
