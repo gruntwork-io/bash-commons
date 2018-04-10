@@ -11,8 +11,6 @@ source "$BASH_COMMONS_SRC_DIR/assert.sh"
 
 readonly DEFAULT_INSTALL_DIR="/opt/gruntwork/bash-commons"
 
-sudo mkdir -p "$DEFAULT_INSTALL_DIR"
-
 function print_usage {
   echo
   echo "Usage: install.sh [options]"
@@ -22,8 +20,8 @@ function print_usage {
   echo "Options:"
   echo
   echo -e "  --dir\t\tInstall the bash-commons library into this folder. Default: $DEFAULT_INSTALL_DIR"
-  echo -e "  --owner\t\tMake this user the owner of the folder in --dir. Default: $USER."
-  echo -e "  --help\t\tShow this help text and exit."
+  echo -e "  --owner\tMake this user the owner of the folder in --dir. Default: $USER."
+  echo -e "  --help\tShow this help text and exit."
   echo
   echo "Example:"
   echo
@@ -70,3 +68,5 @@ function install {
 
   log_info "Successfully installed bash-commons!"
 }
+
+install "$@"
