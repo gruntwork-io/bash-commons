@@ -36,17 +36,9 @@ fi
 
 The first step is to download the code onto your computer.
 
-One way to do this is to use Git to `clone` the code and then you can copy the [bash-commons src
-folder](/modules/bash-commons/src) to its final destination (note, you'll need to replace `<VERSION>` below with a
-version number from the [releases page](https://github.com/gruntwork-io/bash-commons/releases)):
-
-```bash
-git clone --branch <VERSION> https://github.com/gruntwork-io/bash-commons.git
-cp -r bash-commons/modules/bash-commons/src /opt/gruntwork/bash-commons
-```
-
-Another option is to install the [Gruntwork Installer](https://github.com/gruntwork-io/gruntwork-installer) and to
-let it do the work for your:
+The easiest way to do this is with the [Gruntwork Installer](https://github.com/gruntwork-io/gruntwork-installer)
+(note, you'll need to replace `<VERSION>` below with a version number from the [releases
+page](https://github.com/gruntwork-io/bash-commons/releases)):
 
 ```bash
 gruntwork-install \
@@ -55,7 +47,7 @@ gruntwork-install \
   --tag <VERSION>
 ```
 
-The default default location is `/opt/gruntwork/bash-commons`, but you can override that using the `dir` param, and
+The default install location is `/opt/gruntwork/bash-commons`, but you can override that using the `dir` param, and
 override the owner of the install dir using the `owner` and `group` params:
 
 ```bash
@@ -68,12 +60,30 @@ gruntwork-install \
   --module-param group=my-os-group
 ```
 
+If you don't want to use the Gruntwork Installer, you can use `git clone` to get the code onto your computer and then
+copy it to it's final destination manually:
 
-Now you can use `source` to "import" the modules you need and use them in your code:
+```bash
+git clone --branch <VERSION> https://github.com/gruntwork-io/bash-commons.git
+
+sudo mkdir -p /opt/gruntwork
+cp -r bash-commons/modules/bash-commons/src /opt/gruntwork/bash-commons
+sudo chown -R "my-os-username:my-os-group" /opt/gruntwork/bash-commons
+```
+
+
+
+## Importing modules
+
+You can use the `source` command to "import" the modules you need and use them in your code:
 
 ```bash
 source /opt/gruntwork/bash-commons/log.sh
+```
 
+This will make all the functions within that module available in your code:
+
+```bash
 log_info "Hello, World!"
 ```
 
