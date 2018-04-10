@@ -130,13 +130,14 @@ Here's an overview of the modules available in `bash-commons`:
 
 The code in `bash-commons` follows the following principles:
 
+1. [Compatibility](#compatibility)
 1. [Code style](#code-style)
 1. [Everything is a function](#everything-is-a-function)
 1. [Namespacing](#namespacing)
 1. [Testing](#testing)
 
 
-## Compatibility
+### Compatibility
 
 The code in this repo aims to be compatible with:
 
