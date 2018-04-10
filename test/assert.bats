@@ -83,13 +83,13 @@ load "test-helper"
 }
 
 @test "assert_not_empty_or_null on empty array" {
-  local empty=()
+  local readonly empty=()
   run assert_not_empty_or_null "${empty[@]}"
   assert_failure
 }
 
 @test "assert_not_empty_or_null on non-empty array" {
-  local non_empty=("foo" "bar" "baz")
+  local readonly non_empty=("foo" "bar" "baz")
   run assert_not_empty_or_null "${non_empty[@]}"
   assert_success
 }
