@@ -123,15 +123,3 @@ load "test-helper"
   run assert_uid_is_root_or_sudo
   assert_success
 }
-
-@test "assert_uid_is_root_or_sudo as non-root" {
-  local readonly unique_id=$(unique_id 8)
-  local readony test_user="user-for-test-$unique_id"
-
-  useradd "$test_user"
-  run su "$test_user" -c "source $BATS_TEST_DIRNAME/../modules/bash-commons/src/assert.sh && assert_uid_is_root_or_sudo"
-  userdel "$test_user"
-
-  assert_failure
-  assert_output_regex ".*This script should be run using sudo or as the root user"
-}
