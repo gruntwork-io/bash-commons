@@ -1,5 +1,5 @@
 #!/bin/bash
-# A collection of wrappers for direct calls to the AWS CLI and EC2 metadata API. These wrappers exist so that
+# A collection of thin wrappers for direct calls to the AWS CLI and EC2 metadata API. These wrappers exist so that
 # (a) it's more convenient to fetch specific info you need, such as an EC2 Instance's private IP and (b) so you can
 # replace these helpers with mocks to do local testing or unit testing.
 
