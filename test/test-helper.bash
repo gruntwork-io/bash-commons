@@ -33,12 +33,28 @@ assert_equal() {
   fi
 }
 
+assert_equal_regex() {
+  if [[ ! "$2" =~ $1 ]]; then
+    { echo "expected: $1"
+      echo "actual:   $2"
+    } | flunk
+  fi
+}
+
 assert_output() {
   local expected
   if [ $# -eq 0 ]; then expected="$(cat -)"
   else expected="$1"
   fi
   assert_equal "$expected" "$output"
+}
+
+assert_output_regex() {
+  local expected
+  if [ $# -eq 0 ]; then expected="$(cat -)"
+  else expected="$1"
+  fi
+  assert_equal_regex "$expected" "$output"
 }
 
 assert_line() {
