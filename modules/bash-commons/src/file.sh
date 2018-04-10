@@ -57,7 +57,7 @@ function file_replace_or_append_text {
   local readonly replacement_text="$2"
   local readonly file="$3"
 
-  if $(file_exists "$file") && $(file_contains_text "$original_text_regex" "$file"); then
+  if file_exists "$file" && file_contains_text "$original_text_regex" "$file"; then
     file_replace_text "$original_text_regex" "$replacement_text" "$file"
   else
     file_append_text "$replacement_text" "$file"
