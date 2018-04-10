@@ -84,12 +84,19 @@ The code in `bash-commons` follows the following principles:
 1. [Testing](#testing)
 
 
+## Compatibility
+
+The code in this repo aims to be compatible with:
+
+* Bash 3
+* Most major Linux distributions (e.g., Ubuntu, CentOS)
+
+
 ### Code style
 
-All the code should follow mainly follow the [Google Shell Style Guide](https://google.github.io/styleguide/shell.xml).
+All the code should mainly follow the [Google Shell Style Guide](https://google.github.io/styleguide/shell.xml).
 In particular:
 
-* Use the Bash shell. We aim for compatibility with Bash 3.
 * The first line of every script should be `#!/bin/bash`.
 * All code should be defined in functions.
 * Functions should exit or return 0 on success and non-zero on error.
@@ -133,14 +140,19 @@ Every function should be tested:
   maintained the last couple years, so we may need to change to the [bats-core](https://github.com/bats-core/bats-core)
   fork at some point (see [#150](https://github.com/sstephenson/bats/issues/150)).
 
-* [Install Bats](https://github.com/sstephenson/bats/wiki/Install-Bats-Using-a-Package).
+* We run all tests in the [gruntwork/bash-commons-circleci-tests Docker
+  image](https://hub.docker.com/r/gruntwork/bash-commons-circleci-tests/) so that (a) it's consistent with how the CI
+  server runs them, (b) the tests always run on Linux, (c) any changes the tests make, such as writing files or
+  creating OS users, won't affect the host OS, (d) we can replace some of the modules, such as `aws.sh`, with mocks at
+  test time. There is a `docker-compose.yml` file in the `test` folder to make it easy to run the tests.
 
-* To run all the tests: `bats test`.
+* To run all the tests: `docker-compose up`.
 
-* To run one test file: `bats test/array.bats`.
+* To run one test file: `docker-compose run tests bats test/array.bats`.
 
-* CircleCI will run all Bats tests automatically after every build. The build runs in the Docker image defined in
-  [.circleci/Dockerfile](/.circleci/Dockerfile). To build a new version of the image:
+* To leave the Docker container running so you can debug, explore, and interactively run bats: `docker-compose run tests bash`.
+
+* If you ever need to build a new Docker image, the `Dockerfile` is in the [.circleci folder](/.circleci):
 
     ```bash
     cd .circleci
@@ -150,12 +162,7 @@ Every function should be tested:
 
 
 
-
 ## TODO
 
 1. Add automated tests for `aws.sh` and `aws-wrapper.sh`. We have not tested these as they require either running an
    EC2 Instance or run something like [LocalStack](https://github.com/localstack/localstack).
-
-1. Add automated tests for `assert_uid_is_root_or_sudo` and `os_user_is_root_or_sudo`. These methods depend on the
-   current user, which is different in CircleCI (which runs in a Docker image as sudo) and local dev. We'll probably
-   need to run all tests in Docker eventually.

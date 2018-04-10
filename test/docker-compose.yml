@@ -1,0 +1,9 @@
+version: '3'
+services:
+  tests:
+    image: gruntwork/bash-commons-circleci-tests
+    volumes:
+      # Mount all the files so you have "hot reload" of all changes from the host
+      - ../:/usr/src/bash-commons
+    working_dir: /usr/src/bash-commons
+    command: bats test
