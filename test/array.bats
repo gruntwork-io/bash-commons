@@ -1,7 +1,4 @@
 #!/usr/bin/env bats
-#
-# Unit tests for docker-osx-dev. To run these tests, you must have bats
-# installed. See https://github.com/sstephenson/bats
 
 source "$BATS_TEST_DIRNAME/../modules/bash-commons/src/array.sh"
 load "test-helper"
