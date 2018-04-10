@@ -67,3 +67,8 @@ function os_get_current_users_name {
 function os_get_current_users_group {
   id -g -n
 }
+
+# Returns true (0) if the current user is root or sudo and false (1) otherwise.
+function os_user_is_root_or_sudo {
+  [[ "$EUID" == 0 ]]
+}

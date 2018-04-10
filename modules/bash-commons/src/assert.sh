@@ -71,7 +71,7 @@ function assert_value_in_list {
 
 # Check that this script is running as root or sudo and exit with an error if it's not
 function assert_uid_is_root_or_sudo {
-  if [[ $EUID != 0 ]]; then
+  if ! os_user_is_root_or_sudo; then
     log_error "This script should be run using sudo or as the root user"
     exit 1
   fi
