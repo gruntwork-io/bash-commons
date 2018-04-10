@@ -8,6 +8,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y bats
 
-# Install AWS CLI and jq
-RUN apt-get install -y python-pip jq && \
+# Install other basic dependencies
+RUN apt-get install -y python-pip jq sudo && \
     pip install awscli --upgrade --user
