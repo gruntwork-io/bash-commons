@@ -7,17 +7,21 @@ set -e
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/aws.sh"
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assertions.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
 
-# Get the name of the ASG this EC2 Instance is in
+# Get the name of the ASG this EC2 Instance is in. This is done by looking up the instance's tags. This method will
+# wait up until the specified number of retries if the tags or instances are not yet available.
 function aws_wrapper_get_asg_name {
+  local readonly max_retries="$1"
+  local readonly sleep_between_retries="$2"
+
   local instance_id
   instance_id=$(aws_get_instance_id)
 
   local instance_region
   instance_region=$(aws_get_instance_region)
 
-  aws_wrapper_get_instance_tag "$instance_id" "$instance_region" "aws:autoscaling:groupName"
+  aws_wrapper_get_instance_tag "$instance_id" "$instance_region" "aws:autoscaling:groupName" "$max_retries" "$sleep_between_retries"
 }
 
 # Look up the tags for the specified Instance and extract the value for the specified tag key
@@ -25,13 +29,12 @@ function aws_wrapper_get_instance_tag {
   local readonly instance_id="$1"
   local readonly instance_region="$2"
   local readonly tag_key="$3"
-
-  local readonly max_retries=60
-  local readonly sleep_between_retries=5
+  local readonly max_retries="${4:-60}"
+  local readonly sleep_between_retries="${5:-5}"
 
   for (( i=0; i<"$max_retries"; i++ )); do
     local tags
-    tags=$(aws_wrapper_wait_for_instance_tags "$instance_id" "$instance_region")
+    tags=$(aws_wrapper_wait_for_instance_tags "$instance_id" "$instance_region" "$max_retries" "$sleep_between_retries")
     assert_not_empty_or_null "$tags" "tags for Instance $instance_id in $instance_region"
 
     local tag_value
@@ -57,11 +60,10 @@ function aws_wrapper_get_instance_tag {
 function aws_wrapper_wait_for_instance_tags {
   local readonly instance_id="$1"
   local readonly instance_region="$2"
+  local readonly max_retries="${3:-60}"
+  local readonly sleep_between_retries="${4:-5}"
 
   log_info "Looking up tags for Instance $instance_id in $instance_region"
-
-  local readonly max_retries=60
-  local readonly sleep_between_retries=5
 
   for (( i=0; i<"$max_retries"; i++ )); do
     local tags
@@ -88,9 +90,8 @@ function aws_wrapper_wait_for_instance_tags {
 function aws_wrapper_get_asg_size {
   local readonly asg_name="$1"
   local readonly aws_region="$2"
-
-  local readonly max_retries=60
-  local readonly sleep_between_retries=5
+  local readonly max_retries="${3:-60}"
+  local readonly sleep_between_retries="${4:-5}"
 
   for (( i=0; i<"$max_retries"; i++ )); do
     log_info "Looking up the size of the Auto Scaling Group $asg_name in $aws_region"
@@ -121,12 +122,12 @@ function aws_wrapper_get_asg_size {
 function aws_wrapper_wait_for_instances_in_asg {
   local readonly asg_name="$1"
   local readonly aws_region="$2"
+  local readonly max_retries="${3:-60}"
+  local readonly sleep_between_retries="${4:-5}"
 
   local asg_size
-  asg_size=$(aws_wrapper_get_asg_size "$asg_name" "$aws_region")
-
-  local readonly max_retries=60
-  local readonly sleep_between_retries=5
+  asg_size=$(aws_wrapper_get_asg_size "$asg_name" "$aws_region" "$max_retries" "$sleep_between_retries")
+  assert_not_empty_or_null "$asg_size" "size of ASG $asg_name in $aws_region"
 
   log_info "Looking up Instances in ASG $asg_name in $aws_region"
   for (( i=0; i<"$max_retries"; i++ )); do
@@ -157,9 +158,11 @@ function aws_wrapper_get_ips_in_asg {
   local readonly asg_name="$1"
   local readonly aws_region="$2"
   local readonly use_public_ips="$3"
+  local readonly max_retries="${4:-60}"
+  local readonly sleep_between_retries="${5:-5}"
 
   local instances
-  instances=$(aws_describe_instances_in_asg "$asg_name" "$aws_region")
+  instances=$(aws_wrapper_wait_for_instances_in_asg "$asg_name" "$aws_region" "$max_retries" "$sleep_between_retries")
   assert_not_empty_or_null "$instances" "Get info about Instances in ASG $asg_name in $aws_region"
 
   local readonly ip_param=$([[ "$use_public_ips" == "true" ]] && echo "PublicIpAddress" || echo "PrivateIpAddress")
@@ -172,9 +175,11 @@ function aws_wrapper_get_hostnames_in_asg {
   local readonly asg_name="$1"
   local readonly aws_region="$2"
   local readonly use_public_hostnames="$3"
+  local readonly max_retries="${4:-60}"
+  local readonly sleep_between_retries="${5:-5}"
 
   local instances
-  instances=$(aws_wrapper_wait_for_instances_in_asg "$asg_name" "$aws_region")
+  instances=$(aws_wrapper_wait_for_instances_in_asg "$asg_name" "$aws_region" "$max_retries" "$sleep_between_retries")
   assert_not_empty_or_null "$instances" "Get info about Instances in ASG $asg_name in $aws_region"
 
   local readonly hostname_param=$([[ "$use_public_hostnames" == "true" ]] && echo "PublicDnsName" || echo "PrivateDnsName")

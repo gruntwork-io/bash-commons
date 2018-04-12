@@ -4,32 +4,12 @@ source "$BATS_TEST_DIRNAME/../modules/bash-commons/src/aws.sh"
 load "test-helper"
 load "aws-helper"
 
-readonly MOTO_TMP_DIR="/tmp/moto"
-readonly MOTO_PID_FILE_PATH="$MOTO_TMP_DIR/moto.pid"
-
 function setup {
-  mkdir -p "$MOTO_TMP_DIR"
-
-  # Start moto server if it isn't already running
-  if [[ ! -f "$MOTO_PID_FILE_PATH" ]]; then
-    moto_server &
-    echo "$!" > "$MOTO_PID_FILE_PATH"
-
-    # Sleep a bit to give moto a chance to start
-    sleep 1
-  fi
+  start_moto
 }
 
 function teardown {
-  # Stop moto if it's running
-  if [[ -f "$MOTO_PID_FILE_PATH" ]]; then
-    local readonly pid=$(cat "$MOTO_PID_FILE_PATH")
-    kill "$pid" 2>&1 > /dev/null
-    rm -f "$MOTO_PID_FILE_PATH"
-
-    # Sleep a bit to give moto a chance to stop
-    sleep 1
-  fi
+  stop_moto
 }
 
 @test "aws_get_instance_tags empty" {
