@@ -7,3 +7,12 @@ services:
       - ../:/usr/src/bash-commons
     working_dir: /usr/src/bash-commons
     command: bats test
+
+    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
+    privileged: true
+
+    ports:
+      # For moto
+      - "5000:5000"
+      # For ec2-metadata-mock
+      - "8111:8111"
