@@ -1,13 +1,24 @@
 FROM ubuntu:16.04
 MAINTAINER Gruntwork <info@gruntwork.io>
 
-# Install Bats
+# Install basic dependencies
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get install -y software-properties-common && \
+    apt-get install -y vim python-pip jq sudo curl
+
+# Install Bats
+RUN apt-get install -y software-properties-common && \
     add-apt-repository ppa:duggan/bats && \
     DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y bats
 
-# Install other basic dependencies
-RUN apt-get install -y python-pip jq sudo && \
-    pip install awscli --upgrade --user
+# Install AWS CLI
+RUN pip install awscli --upgrade --user
+
+# Install moto: https://github.com/spulec/moto
+RUN pip install flask moto moto[server]
+
+# Install tools we'll need to create a mock EC2 metadata server
+RUN apt-get install -y net-tools iptables
+
+# Copy mock AWS CLI into the PATH
+COPY ./aws-local.sh /usr/local/bin/aws

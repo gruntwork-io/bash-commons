@@ -1,3 +1,4 @@
+#!/bin/bash
 # This is a series of helper functions copy/pasted from many other repos that use BATS for testing. The code isn't
 # pretty, and doesn't follow many of our conventions, but it's useful.
 
@@ -47,6 +48,29 @@ assert_equal_regex() {
   fi
 }
 
+assert_equal_json() {
+  local readonly expected="$1"
+  local readonly actual="$2"
+
+  local expected_json
+  expected_json=$(echo "$expected" | jq -r '.')
+
+  local actual_json
+  actual_json=$(echo "$actual" | jq -r '.')
+
+  if [[ "$expected_json" != "$actual_json" ]]; then
+    { echo "expected: $expected_json"
+      echo "actual:   $actual_json"
+    } | flunk
+  fi
+}
+
+assert_greater_than() {
+  if [ ! "$1" -gt "$2" ]; then
+    echo "expected $1 to be greater than $2" | flunk
+  fi
+}
+
 assert_output() {
   local expected
   if [ $# -eq 0 ]; then expected="$(cat -)"
@@ -61,6 +85,14 @@ assert_output_regex() {
   else expected="$1"
   fi
   assert_equal_regex "$expected" "$output"
+}
+
+assert_output_json() {
+  local expected
+  if [ $# -eq 0 ]; then expected="$(cat -)"
+  else expected="$1"
+  fi
+  assert_equal_json "$expected" "$output"
 }
 
 assert_line() {

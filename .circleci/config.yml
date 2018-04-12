@@ -1,8 +1,11 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: gruntwork/bash-commons-circleci-tests
+    # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
+    # we have to use the machine executor instead.
+    machine: true
     steps:
       - checkout
-      - run: bats test
+      - run: |
+          cd test
+          docker-compose up
