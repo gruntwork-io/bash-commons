@@ -13,7 +13,7 @@ function os_get_available_memory_mb {
 # can use regex. If you don't care about the version, leave it unspecified.
 function os_is_amazon_linux {
   local readonly version="$1"
-  grep -q "Amazon Linux release $version" /etc/*release
+  grep -q "Amazon Linux * $version" /etc/*release
 }
 
 # Returns true (0) if this is an Ubuntu server at the given version or false (1) otherwise. The version number
