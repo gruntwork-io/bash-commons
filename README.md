@@ -32,8 +32,10 @@ elif os_is_centos; then
 fi
 ```
 
+#### Example of `dynamic-ubuntu-wait.sh` usage:
+Simply call the script by curling it during your existing provisioning/automated installation process:
 
-
+`curl -Ls https://raw.githubusercontent.com/gruntwork-io/bash-commons/dynamic-ubuntu-waiter/modules/bash-commons/src/dynamic-ubuntu-wait.sh | bash`
 
 ## Install
 
@@ -125,7 +127,9 @@ Here's an overview of the modules available in `bash-commons`:
 
 * `string.sh`: A collection of string manipulation functions, such as checking if a string contains specific text,
   stripping prefixes, and stripping suffixes.
-
+  
+* `dynamic-ubuntu-wait.sh`: A script that dynamically waits for Ubuntu automatic update mechanism to
+ release all locks so that `apt-get` may run without errors.
 
 
 
