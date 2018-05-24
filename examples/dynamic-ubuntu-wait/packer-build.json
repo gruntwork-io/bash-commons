@@ -1,0 +1,46 @@
+{
+  "min_packer_version": "0.12.0",
+  "variables": {
+    "aws_region": "us-west-1",
+    "github_auth_token": "{{env `GITHUB_OAUTH_TOKEN`}}"
+  },
+  "builders": [{
+    "name": "elasticsearch-ami-ubuntu",
+    "ami_name": "gruntwork-ubuntu-elasticsearch-example-{{uuid | clean_ami_name}}",
+    "ami_description": "An Ubuntu AMI that has Elasticsearch installed.",
+    "instance_type": "t2.micro",
+    "region": "{{user `aws_region`}}",
+    "type": "amazon-ebs",
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "architecture": "x86_64",
+        "name": "*ubuntu-xenial-16.04-amd64-server-*",
+        "block-device-mapping.volume-type": "gp2",
+        "root-device-type": "ebs"
+      },
+      "owners": ["amazon"],
+      "most_recent": true
+    },
+    "ssh_username": "ubuntu"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "# Get around issue where automatic ubuntu updates prevent package installation.",
+      "curl -Ls https://raw.githubusercontent.com/gruntwork-io/bash-commons/dynamic-ubuntu-waiter/modules/bash-commons/src/dynamic-ubuntu-wait.sh | bash",
+      "sudo apt-get -y update"
+    ]
+  },{
+    "type": "shell",
+    "inline": [
+      "sudo apt-get install -y rolldice"
+    ]
+  },{
+    "type": "shell",
+    "inline": [
+      "sudo apt-get -y update",
+      "sudo apt-get install -y nano"
+    ]
+  }]
+}
