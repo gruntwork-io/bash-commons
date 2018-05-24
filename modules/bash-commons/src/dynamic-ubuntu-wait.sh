@@ -26,3 +26,5 @@ echo "Dynamically waiting for ubuntu's automatic update mechanism to let go of l
 
 while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 1; echo 'waiting'; done
 while sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do sleep 1; echo 'still waiting'; done
+
+echo "All locks should have been released..."
