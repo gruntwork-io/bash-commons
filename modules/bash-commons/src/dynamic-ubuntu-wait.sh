@@ -24,7 +24,7 @@ set -e
 
 echo "Dynamically waiting for ubuntu's automatic update mechanism to let go of locks..."
 
-sleep 5 # In case this script is the very first command being run, we wait a bit to give unattended upgrades a chance to start.
+sleep 15 # In case this script is the very first command being run, we wait a bit to give unattended upgrades a chance to start.
 
 while sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do sleep 1; echo 'waiting'; done
 while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 1; echo 'still waiting'; done
