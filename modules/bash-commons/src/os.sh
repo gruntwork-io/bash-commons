@@ -30,6 +30,14 @@ function os_is_centos {
   grep -q "CentOS Linux release $version" /etc/*release
 }
 
+# Returns true (0) if this is a RedHat server at the given version or false (1) otherwise. The version number
+# can use regex. If you don't care about the version, leave it unspecified.
+function os_is_redhat {
+  local readonly version="$1"
+  grep -q "Red Hat Enterprise Linux Server release $version" /etc/*release
+}
+
+
 # Returns true (0) if this is an OS X server or false (1) otherwise.
 function os_is_darwin {
   [[ $(uname -s) == "Darwin" ]]
