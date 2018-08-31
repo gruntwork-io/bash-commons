@@ -122,3 +122,31 @@ END_HEREDOC
   num_instances=$(echo "$output" | jq -r '.Reservations | length')
   assert_greater_than "$num_instances" 0
 }
+
+@test "aws_get_instances_with_tag empty" {
+  run aws_get_instances_with_tag "Name" "Value" "us-east-1"
+  assert_success
+
+  local readonly expected=$(cat <<END_HEREDOC
+{
+  "Reservations": []
+}
+END_HEREDOC
+)
+
+  assert_output_json "$expected"
+}
+
+@test "aws_get_instances_with_tag non-empty" {
+  local -r tag_key="Name"
+  local -r tag_value="Value"
+  local -r region="us-east-1"
+
+  create_mock_instance_with_tags "$tag_key" "$tag_value"
+  run aws_get_instances_with_tag "$tag_key" "$tag_value" "$region"
+  assert_success
+
+  local num_instances
+  num_instances=$(echo "$output" | jq -r '.Reservations | length')
+  assert_greater_than "$num_instances" 0
+}

@@ -179,7 +179,6 @@ function aws_wrapper_get_ips_with_tag {
 
   local instances
   instances=$(aws_get_instances_with_tag "$tag_key" "$tag_value" "$aws_region")
-  assert_not_empty_or_null "$instances" "Get info about Instances with tag $tag_key set to $tag_value"
 
   local readonly ip_param=$([[ "$use_public_ips" == "true" ]] && echo "PublicIpAddress" || echo "PrivateIpAddress")
   echo "$instances" | jq -r ".Reservations[].Instances[].$ip_param"
