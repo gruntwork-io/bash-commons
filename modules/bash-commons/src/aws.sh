@@ -62,6 +62,17 @@ function aws_get_instance_tags {
     --filters "Name=resource-type,Values=instance" "Name=resource-id,Values=$instance_id"
 }
 
+# Get the instances with a given tag and in a specific region. Returns JSON from the AWS CLI's describe-instances command.
+function aws_get_instances_with_tag {
+  local readonly tag_key="$1"
+  local readonly tag_value="$2"
+  local readonly instance_region="$3"
+
+  aws ec2 describe-instances \
+    --region "$instance_region" \
+    --filters "Name=tag:$tag_key,Values=$tag_value"
+}
+
 # Describe the given ASG in the given region. Returns JSON from the AWS CLI's describe-auto-scaling-groups command.
 function aws_describe_asg {
   local readonly asg_name="$1"

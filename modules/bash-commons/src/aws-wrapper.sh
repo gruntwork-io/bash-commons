@@ -169,6 +169,22 @@ function aws_wrapper_get_ips_in_asg {
   echo "$instances" | jq -r ".Reservations[].Instances[].$ip_param"
 }
 
+# Return a space-separated list of IPs belonging to instances with specific tag values.
+# If use_public_ips is "true", these will be the public IPs; otherwise, these will be the private IPs.
+function aws_wrapper_get_ips_with_tag {
+  local readonly tag_key="$1"
+  local readonly tag_value="$2"
+  local readonly aws_region="$3"
+  local readonly use_public_ips="$4"
+
+  local instances
+  instances=$(aws_get_instances_with_tag "$tag_key" "$tag_value" "$aws_region")
+  assert_not_empty_or_null "$instances" "Get info about Instances with tag $tag_key set to $tag_value"
+
+  local readonly ip_param=$([[ "$use_public_ips" == "true" ]] && echo "PublicIpAddress" || echo "PrivateIpAddress")
+  echo "$instances" | jq -r ".Reservations[].Instances[].$ip_param"
+}
+
 # Return a space-separated list of hostnames in the given ASG. If use_public_hostnames is "true", these will be the
 # public hostnames; otherwise, these will be the private hostnames.
 function aws_wrapper_get_hostnames_in_asg {
