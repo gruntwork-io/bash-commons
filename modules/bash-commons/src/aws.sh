@@ -70,7 +70,7 @@ function aws_get_instances_with_tag {
 
   aws ec2 describe-instances \
     --region "$instance_region" \
-    --filters "Name=tag:$tag_key,Values=$tag_value"
+    --filters "Name=tag:$tag_key,Values=$tag_value" "Name=instance-state-name,Values=pending,running"
 }
 
 # Describe the given ASG in the given region. Returns JSON from the AWS CLI's describe-auto-scaling-groups command.
