@@ -4,6 +4,7 @@
 set -e
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/os.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/string.sh"
 
 # Returns true (0) if the given file exists and is a file and false (1) otherwise
 function file_exists {
@@ -62,4 +63,22 @@ function file_replace_or_append_text {
   else
     file_append_text "$replacement_text" "$file"
   fi
+}
+
+# Replace a specific template string in a file with a value. Provided as an array of TEMPLATE-STRING=VALUE
+function file_fill_template {
+  local -r file="$1"
+  shift 1
+  local -ar auto_fill=("$@")
+
+  if [[ -z "${auto_fill[@]}" ]]; then
+    log_info "No auto-fill params specified."
+    return
+  fi
+
+  for param in "${auto_fill[@]}"; do
+    local -r name="$(string_strip_suffix "$param" "=*")"
+    local -r value="$(string_strip_prefix "$param" "*=")"
+    file_replace_text "$name" "$value" "$file"
+  done
 }
