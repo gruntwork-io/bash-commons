@@ -204,3 +204,37 @@ load "test-helper"
 
   rm -f "$tmp_file"
 }
+
+@test "file_fill_template non empty file, nothing to replace" {
+  local -r tmp_file=$(mktemp)
+  local -ar auto_fill=("<__PLACEHOLDER__>=hello")
+  local -r file_contents=$(echo -e "abc\nhey world\nbaz")
+
+  echo "$file_contents" > "$tmp_file"
+
+  run file_fill_template "$tmp_file" "${auto_fill[@]}"
+  assert_success
+
+  local -r actual=$(cat "$tmp_file")
+  local -r expected=$file_contents
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
+
+@test "file_fill_template non empty file, replace text" {
+  local -r tmp_file=$(mktemp)
+  local -ar auto_fill=("<__PLACEHOLDER__>=hello")
+  local -r file_contents=$(echo -e "abc\n<__PLACEHOLDER__> world\nbaz")
+
+  echo "$file_contents" > "$tmp_file"
+
+  run file_fill_template "$tmp_file" "${auto_fill[@]}"
+  assert_success
+
+  local -r actual=$(cat "$tmp_file")
+  local -r expected=$(echo -e "abc\nhello world\nbaz")
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
