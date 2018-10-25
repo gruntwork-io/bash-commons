@@ -76,9 +76,11 @@ function file_fill_template {
     return
   fi
 
+  local name
+  local value
   for param in "${auto_fill[@]}"; do
-    local -r name="$(string_strip_suffix "$param" "=*")"
-    local -r value="$(string_strip_prefix "$param" "*=")"
+    name="$(string_strip_suffix "$param" "=*")"
+    value="$(string_strip_prefix "$param" "*=")"
     file_replace_text "$name" "$value" "$file"
   done
 }
