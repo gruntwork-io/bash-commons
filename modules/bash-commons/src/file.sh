@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # A collection of functions for working with files.
 
 set -e

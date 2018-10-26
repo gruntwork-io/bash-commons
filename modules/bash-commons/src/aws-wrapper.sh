@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # A collection of "high level" wrappers for the AWS CLI and EC2 metadata to simplify common tasks such as looking up
 # tags or IPs for EC2 Instances. Note that these wrappers handle all the data processing and logic, whereas all the
 # direct calls to the AWS CLI and EC2 metadata endpoints are delegated to aws.sh to make unit testing easier.

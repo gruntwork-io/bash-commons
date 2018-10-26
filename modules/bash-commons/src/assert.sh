@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # A collection of useful assertions. Each one checks a condition and if the condition is not satisfied, exits the
 # program. This is useful for defensive programming.
 

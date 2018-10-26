@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script is used by the Gruntwork Installer to install the bash-commons library.
 
 set -e
