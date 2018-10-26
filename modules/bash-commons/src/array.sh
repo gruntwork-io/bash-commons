@@ -4,9 +4,9 @@ set -e
 
 # Returns 0 if the given item (needle) is in the given array (haystack); returns 1 otherwise.
 function array_contains {
-  local readonly needle="$1"
+  local -r needle="$1"
   shift
-  local readonly haystack=("$@")
+  local -ra haystack=("$@")
 
   local item
   for item in "${haystack[@]}"; do
@@ -26,9 +26,9 @@ function array_contains {
 #   Returns: "A,B,C"
 #
 function array_join {
-  local readonly separator="$1"
+  local -r separator="$1"
   shift
-  local readonly values=("$@")
+  local -ra values=("$@")
 
   local out=""
   for (( i=0; i<"${#values[@]}"; i++ )); do
