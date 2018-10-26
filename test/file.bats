@@ -238,3 +238,22 @@ load "test-helper"
 
   rm -f "$tmp_file"
 }
+
+@test "file_fill_template non empty file, replace multiple" {
+  local -r tmp_file=$(mktemp)
+  local -a auto_fill=("<__PLACEHOLDER__>=hello")
+  auto_fill+=("<__PLACEHOLDER2__>=foo")
+
+  local -r file_contents=$(echo -e "abc\n<__PLACEHOLDER__> world\n<__PLACEHOLDER2__> baz")
+
+  echo "$file_contents" > "$tmp_file"
+
+  run file_fill_template "$tmp_file" "${auto_fill[@]}"
+  assert_success
+
+  local -r actual=$(cat "$tmp_file")
+  local -r expected=$(echo -e "abc\nhello world\nfoo baz")
+  assert_equal "$expected" "$actual"
+
+  rm -f "$tmp_file"
+}
