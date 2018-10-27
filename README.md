@@ -157,6 +157,7 @@ In particular:
 * Functions should log to `stderr`.
 * All variables should be `local`. No global variables are allowed at all.
 * Make as many variables `readonly` as possible.
+* If a variable is both local and readonly, use `local -r`. 
 * If calling to a subshell and storing the output in a variable (foo=`$( ... )`), do NOT use `local -r`  in the same
   statement or the [exit code will be lost](https://blog.gruntwork.io/yak-shaving-series-1-all-i-need-is-a-little-bit-of-disk-space-6e5ef1644f67).
   Instead, declare the variable as `local` on one line and then call the subshell on the next line.
