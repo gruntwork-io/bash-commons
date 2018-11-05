@@ -1,11 +1,25 @@
 version: 2
 jobs:
-  build:
+  shellcheck:
+    docker:
+      - image: nlknguyen/alpine-shellcheck:v0.4.6
+    steps:
+      - checkout
+      - run: 
+          name: Run shellcheck against shell scripts
+          command: |
+            shellcheck --version
+            for filename in $(find $CIRCLE_WORKING_DIRECTORY -path ./.git -prune -o -type f -print); do head -n 1 "$filename" | grep "^#\!/usr/bin/env bash" > /dev/null && shellcheck --external-sources --format=gcc $filename; done
+  bats:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
     machine: true
     steps:
       - checkout
-      - run: |
-          cd test
-          docker-compose up
+      - run: docker-compose up
+workflows:
+  version: 2
+  tests:
+    jobs:
+      - shellcheck
+      - bats
