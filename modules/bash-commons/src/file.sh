@@ -3,7 +3,7 @@
 
 set -e
 
-# shellcheck source=./os.sh
+# shellcheck source=./modules/bash-commons/src/os.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/os.sh"
 
 # Returns true (0) if the given file exists and is a file and false (1) otherwise

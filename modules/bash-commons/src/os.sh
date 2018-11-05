@@ -2,7 +2,7 @@
 
 set -e
 
-# shellcheck source=./log.sh
+# shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 
 # Return the available memory on the current OS in MB

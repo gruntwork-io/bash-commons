@@ -5,13 +5,13 @@
 
 set -e
 
-# shellcheck source=./log.sh
+# shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
-# shellcheck source=./array.sh
+# shellcheck source=./modules/bash-commons/src/array.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/array.sh"
-# shellcheck source=./string.sh
+# shellcheck source=./modules/bash-commons/src/string.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/string.sh"
-# shellcheck source=./os.sh
+# shellcheck source=./modules/bash-commons/src/os.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/os.sh"
 
 # Check that the given binary is available on the PATH. If it's not, exit with an error.

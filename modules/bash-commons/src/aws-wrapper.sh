@@ -5,11 +5,11 @@
 
 set -e
 
-# shellcheck source=./log.sh
+# shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
-# shellcheck source=./aws.sh
+# shellcheck source=./modules/bash-commons/src/aws.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/aws.sh"
-# shellcheck source=./assert.sh
+# shellcheck source=./modules/bash-commons/src/assert.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
 
 # Get the name of the ASG this EC2 Instance is in. This is done by looking up the instance's tags. This method will
