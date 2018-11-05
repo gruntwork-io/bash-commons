@@ -11,9 +11,11 @@ into your bash scripts using `source`.
 ## Examples
 
 Once you have `bash-commons` installed (see the [install instructions](#install)), you use `source` to import the
-modules and start calling the functions within them:
+modules and start calling the functions within them. Before you import any modules, make sure you `source` the
+`bootstrap.sh` file which sets some important defaults which encourages good code:
 
 ```bash
+source /opt/gruntwork/bash-commons/bootstrap.sh
 source /opt/gruntwork/bash-commons/log.sh
 source /opt/gruntwork/bash-commons/assert.sh
 source /opt/gruntwork/bash-commons/os.sh
