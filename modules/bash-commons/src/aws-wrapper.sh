@@ -3,8 +3,6 @@
 # tags or IPs for EC2 Instances. Note that these wrappers handle all the data processing and logic, whereas all the
 # direct calls to the AWS CLI and EC2 metadata endpoints are delegated to aws.sh to make unit testing easier.
 
-set -e
-
 # shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 # shellcheck source=./modules/bash-commons/src/aws.sh

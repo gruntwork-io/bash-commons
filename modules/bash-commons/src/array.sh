@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 # Returns 0 if the given item (needle) is in the given array (haystack); returns 1 otherwise.
 function array_contains {
   local -r needle="$1"

@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 # Log the given message at the given level. All logs are written to stderr with a timestamp.
 function log {
   local -r level="$1"

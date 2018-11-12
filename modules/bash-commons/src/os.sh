@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 # shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 

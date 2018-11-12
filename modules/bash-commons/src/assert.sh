@@ -2,9 +2,6 @@
 # A collection of useful assertions. Each one checks a condition and if the condition is not satisfied, exits the
 # program. This is useful for defensive programming.
 
-
-set -e
-
 # shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 # shellcheck source=./modules/bash-commons/src/array.sh

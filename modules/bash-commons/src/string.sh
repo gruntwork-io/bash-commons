@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 # Return true (0) if the first string (haystack) contains the second string (needle), and false (1) otherwise.
 function string_contains {
   local -r haystack="$1"

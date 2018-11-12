@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # A collection of functions for working with files.
 
-set -e
-
 # shellcheck source=./modules/bash-commons/src/os.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/os.sh"
 
