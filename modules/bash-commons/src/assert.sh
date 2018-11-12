@@ -65,7 +65,7 @@ function assert_value_in_list {
   local -ar list=("$@")
 
   if ! array_contains "$arg_value" "${list[@]}"; then
-    log_error "'$arg_value' is not a valid value for $arg_name. Must be one of: [${list[*]}]."
+    log_error "'$arg_value' is not a valid value for $arg_name. Must be one of: [${list[@]}]."
     exit 1
   fi
 }
