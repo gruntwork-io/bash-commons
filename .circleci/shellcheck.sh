@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-#!/usr/bin/env bash
 # Sets some Bash options to encourage well formed code.
 # For example, some of the options here will cause the script to terminate as
 # soon as a command fails. Another option will cause an error if an undefined
@@ -51,12 +50,12 @@ function run_shellcheck {
   set +e
   IFS=$'\n' \
     read -ra results <<< \
-      $(shellcheck \
+      "$(shellcheck \
         --exclude=SC1117 \
         --external-sources \
         --format="$format" \
         "$@" 2>&1
-      )
+      )"
   exit_code=$?
   set -e
 
@@ -112,14 +111,14 @@ function main {
   local line
 
   # If `CIRCLE_WORKING_DIRECTORY` is not set, assume the project root dir.
-  if [[ -z ${CIRCLE_WORKING_DIRECTORY:-} ]]; then
-    CIRCLE_WORKING_DIRECTORY=$(
+  if [[ -z "${CIRCLE_WORKING_DIRECTORY:-}" ]]; then
+    CIRCLE_WORKING_DIRECTORY="$(
       readlink -f \
         "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
-    )
+    )"
   fi
 
-  if [[ -z $filename ]]; then
+  if [[ -z "$filename" ]]; then
     # Since no filenames are provided, look for files based on shebang.
     while read -r filename; do
       set +e
