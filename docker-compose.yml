@@ -1,16 +1,21 @@
 version: '3'
 services:
-  tests:
+  shellcheck:
+    build:
+      context: ./
+    volumes:
+      - ./:/usr/local/src/bash-commons
+    working_dir: /usr/local/src/bash-commons/.circleci
+    command: ./shellcheck.sh
+  bats:
     image: gruntwork/bash-commons-circleci-tests
     volumes:
       # Mount all the files so you have "hot reload" of all changes from the host
-      - ./:/usr/src/bash-commons
-    working_dir: /usr/src/bash-commons
+      - ./:/usr/local/src/bash-commons
+    working_dir: /usr/local/src/bash-commons
     command: bats test
-
     # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
     privileged: true
-
     ports:
       # For moto
       - "5000:5000"
