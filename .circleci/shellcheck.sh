@@ -27,9 +27,6 @@ set -o nounset
 # see: https://www.davidpashley.com/articles/writing-robust-shell-scripts/
 set -o pipefail
 
-# Less eager word splitting - no space.
-IFS=$'\n\t'
-
 # Make debugging easier when you use `set -x`
 # See: http://wiki.bash-hackers.org/scripting/debuggingtips#making_xtrace_more_useful
 export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
