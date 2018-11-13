@@ -12,7 +12,7 @@ into your bash scripts using `source`.
 
 Once you have `bash-commons` installed (see the [install instructions](#install)), you use `source` to import the
 modules and start calling the functions within them. Before you import any modules, make sure you `source` the
-`bootstrap.sh` file which sets some important defaults which encourages good code:
+`bootstrap.sh` file which sets some important defaults to encourage good code:
 
 ```bash
 source /opt/gruntwork/bash-commons/bootstrap.sh
