@@ -3,12 +3,16 @@ services:
   shellcheck:
     build:
       context: ./
+      dockerfile: Dockerfile.shellcheck
     volumes:
       - ./:/usr/local/src/bash-commons
     working_dir: /usr/local/src/bash-commons/.circleci
     command: ./shellcheck.sh
   bats:
-    image: gruntwork/bash-commons-circleci-tests
+          # image: gruntwork/bash-commons-circleci-tests
+    build:
+      context: ./
+      dockerfile: Dockerfile.bats
     volumes:
       # Mount all the files so you have "hot reload" of all changes from the host
       - ./:/usr/local/src/bash-commons
