@@ -221,3 +221,11 @@ Every function should be tested:
 
 1. Add automated tests for `aws.sh` and `aws-wrapper.sh`. We have not tested these as they require either running an
    EC2 Instance or run something like [LocalStack](https://github.com/localstack/localstack).
+
+## License
+
+This code is released under the Apache 2.0 License. Please see 
+[LICENSE](https://github.com/gruntwork-io/bash-commons/tree/master/LICENSE) and 
+[NOTICE](https://github.com/gruntwork-io/bash-commons/tree/master/NOTICE) for more details.
+
+Copyright &copy; 2018 Gruntwork, Inc.
