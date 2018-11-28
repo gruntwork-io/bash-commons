@@ -9,7 +9,6 @@ services:
     working_dir: /usr/local/src/bash-commons/.circleci
     command: ./shellcheck.sh
   bats:
-          # image: gruntwork/bash-commons-circleci-tests
     build:
       context: ./
       dockerfile: Dockerfile.bats
