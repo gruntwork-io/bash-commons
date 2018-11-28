@@ -11,9 +11,11 @@ into your bash scripts using `source`.
 ## Examples
 
 Once you have `bash-commons` installed (see the [install instructions](#install)), you use `source` to import the
-modules and start calling the functions within them:
+modules and start calling the functions within them. Before you import any modules, make sure you `source` the
+`bootstrap.sh` file which sets some important defaults to encourage good code:
 
 ```bash
+source /opt/gruntwork/bash-commons/bootstrap.sh
 source /opt/gruntwork/bash-commons/log.sh
 source /opt/gruntwork/bash-commons/assert.sh
 source /opt/gruntwork/bash-commons/os.sh
@@ -150,17 +152,17 @@ The code in this repo aims to be compatible with:
 All the code should mainly follow the [Google Shell Style Guide](https://google.github.io/styleguide/shell.xml).
 In particular:
 
-* The first line of every script should be `#!/bin/bash`.
+* The first line of every script should be `#!/usr/bin/env bash`.
 * All code should be defined in functions.
 * Functions should exit or return 0 on success and non-zero on error.
 * Functions should return output by writing it to `stdout`.
 * Functions should log to `stderr`.
 * All variables should be `local`. No global variables are allowed at all.
 * Make as many variables `readonly` as possible.
-* If calling to a subshell and storing the output in a variable (foo=`$( ... )`), do NOT use `local` and `readonly`
-  in the same statement or the [exit code will be
-  lost](https://blog.gruntwork.io/yak-shaving-series-1-all-i-need-is-a-little-bit-of-disk-space-6e5ef1644f67). Instead,
-  declare the variable as `local` on one line and then call the subshell on the next line.
+* If a variable is both local and readonly, use `local -r`. 
+* If calling to a subshell and storing the output in a variable (foo=`$( ... )`), do NOT use `local -r`  in the same
+  statement or the [exit code will be lost](https://blog.gruntwork.io/yak-shaving-series-1-all-i-need-is-a-little-bit-of-disk-space-6e5ef1644f67).
+  Instead, declare the variable as `local` on one line and then call the subshell on the next line.
 * Quote all strings.
 * Use `[[ ... ]]` instead of `[ ... ]`.
 * Use snake_case for function and variable names. Use UPPER_SNAKE_CASE for constants.

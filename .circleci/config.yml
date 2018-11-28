@@ -1,11 +1,20 @@
 version: 2
 jobs:
-  build:
+  shellcheck:
+    machine: true
+    steps:
+      - checkout
+      - run: docker-compose up shellcheck
+  bats:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
     machine: true
     steps:
       - checkout
-      - run: |
-          cd test
-          docker-compose up
+      - run: docker-compose up bats
+workflows:
+  version: 2
+  checks:
+    jobs:
+      - shellcheck
+      - bats

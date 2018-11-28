@@ -1,11 +1,9 @@
-#!/bin/bash
-
-set -e
+#!/usr/bin/env bash
 
 # Return true (0) if the first string (haystack) contains the second string (needle), and false (1) otherwise.
 function string_contains {
-  local readonly haystack="$1"
-  local readonly needle="$2"
+  local -r haystack="$1"
+  local -r needle="$2"
 
   [[ "$haystack" == *"$needle"* ]]
 }
@@ -13,15 +11,15 @@ function string_contains {
 # Returns true (0) if the first string (haystack), which is assumed to contain multiple lines, contains the second
 # string (needle), and false (1) otherwise. The needle can contain regular expressions.
 function string_multiline_contains {
-  local readonly haystack="$1"
-  local readonly needle="$2"
+  local -r haystack="$1"
+  local -r needle="$2"
 
   echo "$haystack" | grep -q "$needle"
 }
 
 # Convert the given string to uppercase
 function string_to_uppercase {
-  local readonly str="$1"
+  local -r str="$1"
   echo "$str" | awk '{print toupper($0)}'
 }
 
@@ -34,8 +32,8 @@ function string_to_uppercase {
 #
 # http://stackoverflow.com/a/16623897/483528
 function string_strip_prefix {
-  local readonly str="$1"
-  local readonly prefix="$2"
+  local -r str="$1"
+  local -r prefix="$2"
   echo "${str#$prefix}"
 }
 
@@ -48,13 +46,13 @@ function string_strip_prefix {
 #
 # http://stackoverflow.com/a/16623897/483528
 function string_strip_suffix {
-  local readonly str="$1"
-  local readonly suffix="$2"
+  local -r str="$1"
+  local -r suffix="$2"
   echo "${str%$suffix}"
 }
 
 # Return true if the given response is empty or "null" (the latter is from jq parsing).
 function string_is_empty_or_null {
-  local readonly response="$1"
+  local -r response="$1"
   [[ -z "$response" || "$response" == "null" ]]
 }

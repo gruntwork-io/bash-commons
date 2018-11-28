@@ -21,4 +21,4 @@ RUN pip install flask moto moto[server]
 RUN apt-get install -y net-tools iptables
 
 # Copy mock AWS CLI into the PATH
-COPY ./aws-local.sh /usr/local/bin/aws
+COPY ./.circleci/aws-local.sh /usr/local/bin/aws

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # A wrapper script for the AWS CLI that redirects all calls to localhost:5000 so that they go to moto instead of the
 # real AWS servers. This script should be installed in the PATH so it gets called instead of the real AWS CLI, and this
 # script will, in turn, call the real AWS CLI.

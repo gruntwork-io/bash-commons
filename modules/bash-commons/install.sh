@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script is used by the Gruntwork Installer to install the bash-commons library.
 
 set -e
@@ -6,8 +6,11 @@ set -e
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly BASH_COMMONS_SRC_DIR="$SCRIPT_DIR/src"
 
+# shellcheck source=./modules/bash-commons/src/log.sh
 source "$BASH_COMMONS_SRC_DIR/log.sh"
+# shellcheck source=./modules/bash-commons/src/assert.sh
 source "$BASH_COMMONS_SRC_DIR/assert.sh"
+# shellcheck source=./modules/bash-commons/src/os.sh
 source "$BASH_COMMONS_SRC_DIR/os.sh"
 
 readonly DEFAULT_INSTALL_DIR="/opt/gruntwork/bash-commons"
@@ -37,7 +40,7 @@ function install {
   local install_dir_owner="$DEFAULT_USER_NAME"
   local install_dir_group="$DEFAULT_USER_GROUP_NAME"
 
-  while [[ $# > 0 ]]; do
+  while [[ $# -gt 0 ]]; do
     local key="$1"
 
     case "$key" in
