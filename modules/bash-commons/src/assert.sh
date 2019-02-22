@@ -70,6 +70,35 @@ function assert_value_in_list {
   fi
 }
 
+function assert_exactly_one_of {
+  local -r arg_name1="$1"
+  local -r arg_val1="$2"
+  local -r arg_name2="$3"
+  local -r arg_val2="$4"
+  local -r arg_name3="$5"
+  local -r arg_val3="$6"
+
+  local num_non_empty=0
+  local arg_names=()
+  local arg_vals=()
+
+  if [[ ! -z "$arg_name1" ]]; then arg_names+=("$arg_name1"); arg_vals+=("$arg_val1"); fi
+  if [[ ! -z "$arg_name2" ]]; then arg_names+=("$arg_name2"); arg_vals+=("$arg_val2"); fi
+  if [[ ! -z "$arg_name3" ]]; then arg_names+=("$arg_name3"); arg_vals+=("$arg_val3"); fi
+
+  # Determine how many arg_vals are non-empty
+  for (( i=0; i<${#arg_vals[@]}; i++ )); do
+    if [[ ! -z "${arg_vals[i]}" ]]; then
+      num_non_empty=$((num_non_empty+1))
+    fi
+  done
+
+  if [[ ${num_non_empty} != 1 ]]; then
+    log_error "Exactly one of ${arg_names[*]} must be set."
+    exit 1
+  fi
+}
+
 # Check that this script is running as root or sudo and exit with an error if it's not
 function assert_uid_is_root_or_sudo {
   if ! os_user_is_root_or_sudo; then

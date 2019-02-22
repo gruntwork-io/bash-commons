@@ -50,6 +50,18 @@ function file_replace_text {
   sudo sed "${args[@]}" > /dev/null
 }
 
+# Call file_replace_text for each of the files listed in $files[@]
+function file_replace_text_in_files {
+  local -r original_text_regex="$1"
+  local -r replacement_text="$2"
+  shift 2
+  local -r files=("$@")
+
+  for file in "${files[@]}"; do
+    file_replace_text "$original_text_regex" "$replacement_text" "$file"
+  done
+}
+
 # If the given file already contains the original text (which is a regex), replace it with the given replacement. If
 # it doesn't contain that text, simply append the replacement text at the end of the file.
 function file_replace_or_append_text {

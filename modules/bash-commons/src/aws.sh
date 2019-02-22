@@ -60,6 +60,144 @@ function aws_get_instance_tags {
     --filters "Name=resource-type,Values=instance" "Name=resource-id,Values=$instance_id"
 }
 
+# Return the value of the $tag_key for the given EC2 Instance $instance_id
+function aws_get_instance_tag_val {
+  local -r tag_key="$1"
+  local -r instance_id="$2"
+  local -r instance_region="$3"
+
+  local tags
+  tags=$(aws_get_instance_tags "$instance_id" "$instance_region")
+
+  local tag_val
+  tag_val=$(echo "$tags" | jq -r ".Tags[] | select( .ResourceType == \"instance\" and .Key == \"$tag_key\") | .Value")
+
+  echo "$tag_val"
+}
+
+# Return all ENIs attached to the current EC2 Instance
+function aws_get_enis_for_instance {
+  local -r instance_id="$1"
+  local -r aws_region="$2"
+
+  aws ec2 describe-network-interfaces --region "$aws_region" --filters "Name=attachment.instance-id,Values=$instance_id"
+}
+
+# Find all Elastic Network Interfaces (ENIs) that have a matching $tag_key=$tag_value
+function aws_get_enis_for_tag {
+  local -r tag_key="$1"
+  local -r tag_value="$2"
+  local -r aws_region="$3"
+
+  aws ec2 describe-network-interfaces --region "$aws_region" --filters "Name=tag:$tag_key,Values=$tag_value"
+}
+
+# Given the $network_interfaces_output, return the ID of the ENI at the given $eni_index (zero-based)
+#
+# Example:
+#   network_interfaces_output=$(aws_get_enis_for_this_ec2_instance)
+#   aws_get_eni_id "$network_interfaces_output" 0
+function aws_get_eni_id {
+  local -r network_interfaces_output="$1"
+  local -r eni_device_index="$2"
+
+  assert_not_empty "network_interfaces_output" "$network_interfaces_output" "Value returned from AWS API describe-network-interfaces output"
+  assert_not_empty "eni_device_index" "$eni_device_index"
+
+  local num_enis
+  num_enis=$(echo "$network_interfaces_output" | jq -r ".NetworkInterfaces | length")
+
+  if [[ "$num_enis" -lt 1 ]]; then
+    log_error "Expected to find at least 1 ENI in AWS API describe-network-interfaces output."
+    exit 1
+  fi
+
+  if [[ "$num_enis" -lt "$eni_device_index" ]]; then
+    log_error "Requested an ENI device-index out of range from describe-network-interfaces output."
+    exit 1
+  fi
+
+  local eni_id
+  eni_id=$(echo "$network_interfaces_output" | jq -r ".NetworkInterfaces[] | select(.Attachment.DeviceIndex == $eni_device_index).NetworkInterfaceId")
+
+  assert_not_empty_or_null "$eni_id" "No ENI exists whose DeviceIndex property is $eni_device_index. Did you forget to create or attach an additional ENI?"
+
+  echo "$eni_id"
+}
+
+# Given a $tag_key, return the corresponding tag_val for the ENI at the the given $eni_device_index (zero-based).
+#
+# Example:
+#   network_interfaces_output=$(aws_get_enis_for_this_ec2_instance)
+#   aws_get_eni_tag_val "$network_interfaces_output" 0 "DnsName"
+function aws_get_eni_tag_val {
+  local -r network_interfaces_output="$1"
+  local -r eni_device_index="$2"
+  local -r tag_key="$3"
+
+  assert_not_empty "tag_key" "$tag_key"
+
+  local eni_id
+  eni_id="$(aws_get_eni_id "$network_interfaces_output" "$eni_device_index")"
+  log_info "Looking up the value of the tag \"$tag_key\" for ENI $eni_id"
+
+  local tag_val
+  tag_val=$(echo "$network_interfaces_output" | jq -j ".NetworkInterfaces[] | select(.NetworkInterfaceId == \"$eni_id\").TagSet[] | select(.Key == \"$tag_key\").Value")
+
+  assert_not_empty_or_null_warn "$tag_val" "Found empty value when looking up tag \"$tag_key\" for ENI $eni_id"
+
+  echo "$tag_val"
+}
+
+# Return the *public* IP Address of for the ENI at the the given $eni_device_index (zero-based).
+#
+# Example:
+#   network_interfaces_output=$(aws_get_enis_for_this_ec2_instance)
+#   aws_get_eni_public_ip "$network_interfaces_output" 0
+function aws_get_eni_public_ip {
+  local -r network_interfaces_output="$1"
+  local -r eni_device_index="$2"
+
+  local eni_id
+  eni_id="$(aws_get_eni_id "$network_interfaces_output" "$eni_device_index")"
+  log_info "Looking up public IP address for ENI $eni_id"
+
+  public_ip=$(echo "$network_interfaces_output" | jq -j ".NetworkInterfaces[] | select(.NetworkInterfaceId == \"$eni_id\").PrivateIpAddresses[0].Association.PublicIp")
+
+  assert_not_empty_or_null "$public_ip" "No public IP address found for ENI $eni_id."
+
+  echo "$public_ip"
+}
+
+# Return the *private* IP Address of for the ENI at the the given $eni_device_index (zero-based).
+#
+# Example:
+#   network_interfaces_output=$(aws_get_enis_for_this_ec2_instance)
+#   aws_get_eni_private_ip "$network_interfaces_output" 0
+function aws_get_eni_private_ip {
+  local -r network_interfaces_output="$1"
+  local -r eni_device_index="$2"
+
+  local eni_id
+  eni_id="$(aws_get_eni_id "$network_interfaces_output" "$eni_device_index")"
+  log_info "Looking up private IP address for ENI $eni_id"
+
+  public_ip=$(echo "$network_interfaces_output" | jq -j ".NetworkInterfaces[] | select(.NetworkInterfaceId == \"$eni_id\").PrivateIpAddresses[0].PrivateIpAddress")
+
+  echo "$public_ip"
+}
+
+# Return the private IP Address of the ENI attached to the given EC2 Instance
+function aws_get_eni_private_ip_for_instance {
+  local -r network_interfaces_output="$1"
+  local -r instance_id="$2"
+
+  local attached_network_interface
+  attached_network_interface=$(echo "$network_interfaces_output" | jq -r ".NetworkInterfaces[] | select(.Attachment.InstanceId == \"$instance_id\")")
+
+  echo "$attached_network_interface" | jq -r '.PrivateIpAddresses[0].PrivateIpAddress'
+}
+
 # Get the instances with a given tag and in a specific region. Returns JSON from the AWS CLI's describe-instances command.
 function aws_get_instances_with_tag {
   local -r tag_key="$1"
