@@ -75,3 +75,38 @@ load "test-helper"
   run os_user_is_root_or_sudo
   assert_success
 }
+
+@test "os_user_exists for root user" {
+  run os_user_exists root
+  assert_success
+}
+
+@test "os_user_exists for missing user" {
+  run os_user_exists missing
+  assert_failure
+}
+
+@test "os_create_user for new_user user" {
+  local suffix
+  suffix=$(date +%s)
+  local -r username="new_user$suffix"
+  run os_user_exists "$username"
+  assert_failure
+  run os_create_user "$username"
+  assert_success
+  run os_user_exists "$username"
+  assert_success
+}
+
+
+@test "os_change_dir_owner for new_user user" {
+  local suffix
+  suffix=$(date +%s)
+  local -r username="new_user$suffix"
+  run os_create_user "$username"
+  assert_success
+  mkdir -p "/tmp/$username"
+  os_change_dir_owner "/tmp/$username" "$username"
+  local owner=$(stat -c '%U' "/tmp/$username")
+  assert_equal "$username" "$owner"
+}

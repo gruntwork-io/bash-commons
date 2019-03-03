@@ -53,6 +53,21 @@ END_HEREDOC
   assert_output_json "$expected"
 }
 
+@test "aws_get_instance_tag_val non-empty" {
+  local -r tag_key="foo"
+  local -r tag_value="bar"
+
+  local instance_id
+  instance_id=$(create_mock_instance_with_tags "$tag_key" "$tag_value")
+
+  run aws_get_instance_tag_val "$tag_key" "$instance_id" "us-east-1"
+  assert_success
+
+  local -r expected="$tag_value"
+
+  assert_output "$expected"
+}
+
 @test "aws_describe_asg empty" {
   run aws_describe_asg "fake-asg-name" "us-east-1"
   assert_success

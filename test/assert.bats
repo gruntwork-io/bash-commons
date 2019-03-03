@@ -124,6 +124,51 @@ load "test-helper"
   assert_failure
 }
 
+@test "assert_exactly_one_of list of length 2, with value in pos 1" {
+  run assert_exactly_one_of "--foo" "foo" "--bar" ""
+  assert_success
+}
+
+@test "assert_exactly_one_of list of length 2, with value in pos 2" {
+  run assert_exactly_one_of "--foo" "" "--bar" "bar"
+  assert_success
+}
+
+@test "assert_exactly_one_of list of length 3, with value in pos 1" {
+  run assert_exactly_one_of "--foo" "foo" "--bar" "" "--baz" ""
+  assert_success
+}
+
+@test "assert_exactly_one_of list of length 3, with value in pos 2" {
+  run assert_exactly_one_of "--foo" "" "--bar" "bar" "--baz" ""
+  assert_success
+}
+
+@test "assert_exactly_one_of list of length 3, with value in pos 3" {
+  run assert_exactly_one_of "--foo" "" "--bar" "" "--baz" "baz"
+  assert_success
+}
+
+@test "assert_exactly_one_of list of length 3, with value in pos 1 and 2" {
+  run assert_exactly_one_of "--foo" "foo" "--bar" "bar" "--baz" ""
+  assert_failure
+}
+
+@test "assert_exactly_one_of list of length 3, with value in pos 1 and 3" {
+  run assert_exactly_one_of "--foo" "foo" "--bar" "" "--baz" "baz"
+  assert_failure
+}
+
+@test "assert_exactly_one_of list of length 3, with value in pos 2 and 3" {
+  run assert_exactly_one_of "--foo" "" "--bar" "bar" "--baz" "baz"
+  assert_failure
+}
+
+@test "assert_exactly_one_of list of length 3, with value in pos 1, 2 and 3" {
+  run assert_exactly_one_of "--foo" "foo" "--bar" "bar" "--baz" "baz"
+  assert_failure
+}
+
 @test "assert_uid_is_root_or_sudo as root" {
   run assert_uid_is_root_or_sudo
   assert_success

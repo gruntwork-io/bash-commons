@@ -136,6 +136,29 @@ load "test-helper"
   rm -f "$tmp_file"
 }
 
+@test "file_replace_text_in_files non empty files, regex match" {
+  local tmp_file1=$(mktemp)
+  local tmp_file2=$(mktemp)
+  local -r original_regex=".*foo.*"
+  local -r replacement="bar"
+  local -r file_contents1="abc foo def"
+  local -r file_contents2="baz foo fuzz"
+
+  echo "$file_contents1" > "$tmp_file1"
+  echo "$file_contents2" > "$tmp_file2"
+
+  run file_replace_text_in_files "$original_regex" "$replacement" "$tmp_file1" "$tmp_file2"
+  assert_success
+
+  local actual1=$(cat "$tmp_file1")
+  local actual2=$(cat "$tmp_file2")
+  assert_equal "$replacement" "$actual1"
+  assert_equal "$replacement" "$actual2"
+
+
+  rm -f "$tmp_file1" "$tmp_file2"
+}
+
 @test "file_replace_or_append_text empty file" {
   local readonly tmp_file=$(mktemp)
   local readonly original_regex="foo"
