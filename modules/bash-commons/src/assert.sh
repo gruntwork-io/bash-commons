@@ -70,30 +70,29 @@ function assert_value_in_list {
   fi
 }
 
+# Reads in a list of keys and values and asserts that one and only one of the values is set.
+# This is useful for command line options that are mutually exclusive.
+# Example:
+#   assert_exactly_one_of "--opt1" "" "--opt2" "val2" "--opt3" "" "--opt4" ""
+# Examples that assert failure:
+#   assert_exactly_one_of "--opt1" "val1" "--opt2" "val2" "--opt3" "" "--opt4" ""
+#   assert_exactly_one_of "--opt1" "" "--opt2" "" "--opt3" "" "--opt4" ""
 function assert_exactly_one_of {
-  local -r arg_name1="$1"
-  local -r arg_val1="$2"
-  local -r arg_name2="$3"
-  local -r arg_val2="$4"
-  local -r arg_name3="$5"
-  local -r arg_val3="$6"
+  local -ra args=("$@")
+  local -r num_args="${#args[@]}"
 
   local num_non_empty=0
-  local arg_names=()
-  local arg_vals=()
-
-  if [[ ! -z "$arg_name1" ]]; then arg_names+=("$arg_name1"); arg_vals+=("$arg_val1"); fi
-  if [[ ! -z "$arg_name2" ]]; then arg_names+=("$arg_name2"); arg_vals+=("$arg_val2"); fi
-  if [[ ! -z "$arg_name3" ]]; then arg_names+=("$arg_name3"); arg_vals+=("$arg_val3"); fi
+  local -a arg_names=()
 
   # Determine how many arg_vals are non-empty
-  for (( i=0; i<${#arg_vals[@]}; i++ )); do
-    if [[ ! -z "${arg_vals[i]}" ]]; then
+  for (( i=0; i<$((num_args+1)); i+=2 )); do
+    arg_names+=("${args[i]}")
+    if [[ ! -z "${args[i+1]}" ]]; then
       num_non_empty=$((num_non_empty+1))
     fi
   done
 
-  if [[ ${num_non_empty} != 1 ]]; then
+  if [[ "$num_non_empty" -ne 1 ]]; then
     log_error "Exactly one of ${arg_names[*]} must be set."
     exit 1
   fi

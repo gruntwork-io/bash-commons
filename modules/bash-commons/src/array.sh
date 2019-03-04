@@ -20,18 +20,18 @@ function array_contains {
 #
 # Examples:
 #
-# array_split "a,b,c", ","
+# array_split "a,b,c" ","
 #   Returns: ("a" "b" "c")
 #
 # Hint:
-# When calling this function, use the following construction: ary=( $(array_split "a,b,c", ",") )
+# When calling this function, use the following construction: ary=( $(array_split "a,b,c" ",") )
 #
 # Sources:
 # - https://stackoverflow.com/a/15988793/2308858
 function array_split {
   local -r separator="$1"
   local -r str="$2"
-  local ary=()
+  local -a ary=()
 
   IFS="$separator" read -a ary <<<"$str"
 
@@ -48,7 +48,7 @@ function array_split {
 function array_join {
   local -r separator="$1"
   shift
-  local -ra values=("$@")
+  local -ar values=("$@")
 
   local out=""
   for (( i=0; i<"${#values[@]}"; i++ )); do
@@ -77,7 +77,7 @@ function array_join {
 function array_prepend {
   local -r prefix="$1"
   shift 1
-  local -r ary=($@)
+  local -ar ary=($@)
 
   updated_ary=( "${ary[@]/#/$prefix}" )
   echo ${updated_ary[*]}

@@ -55,7 +55,7 @@ function file_replace_text_in_files {
   local -r original_text_regex="$1"
   local -r replacement_text="$2"
   shift 2
-  local -r files=("$@")
+  local -ar files=("$@")
 
   for file in "${files[@]}"; do
     file_replace_text "$original_text_regex" "$replacement_text" "$file"

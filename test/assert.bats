@@ -169,6 +169,21 @@ load "test-helper"
   assert_failure
 }
 
+@test "assert_exactly_one_of list of length 4, with value in pos 2" {
+  run assert_exactly_one_of "--foo" "" "--bar" "bar" "--baz" "" "--qux" ""
+  assert_success
+}
+
+@test "assert_exactly_one_of list of length 4, with value in pos 2 and 4" {
+  run assert_exactly_one_of "--foo" "" "--bar" "bar" "--baz" "" "--qux" "qux"
+  assert_failure
+}
+
+@test "assert_exactly_one_of list of length 4, with no value set" {
+  run assert_exactly_one_of "--foo" "" "--bar" "" "--baz" "" "--qux" ""
+  assert_failure
+}
+
 @test "assert_uid_is_root_or_sudo as root" {
   run assert_uid_is_root_or_sudo
   assert_success
