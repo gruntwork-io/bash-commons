@@ -184,6 +184,11 @@ load "test-helper"
   assert_failure
 }
 
+@test "assert_exactly_one_of list of length 5, with one value set, fails for odd num_args" {
+  run assert_exactly_one_of "--foo" "foo" "--bar" "" "--baz" "" "--qux"
+  assert_failure
+}
+
 @test "assert_uid_is_root_or_sudo as root" {
   run assert_uid_is_root_or_sudo
   assert_success

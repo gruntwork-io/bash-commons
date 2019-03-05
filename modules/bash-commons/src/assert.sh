@@ -80,6 +80,10 @@ function assert_value_in_list {
 function assert_exactly_one_of {
   local -ra args=("$@")
   local -r num_args="${#args[@]}"
+  if [[ "$((num_args % 2))" -ne 0 ]]; then
+    log_error "This script expects an even number of arguments but received $num_args instead."
+    exit 1
+  fi
 
   local num_non_empty=0
   local -a arg_names=()
