@@ -70,6 +70,38 @@ function assert_value_in_list {
   fi
 }
 
+# Reads in a list of keys and values and asserts that one and only one of the values is set.
+# This is useful for command line options that are mutually exclusive.
+# Example:
+#   assert_exactly_one_of "--opt1" "" "--opt2" "val2" "--opt3" "" "--opt4" ""
+# Examples that assert failure:
+#   assert_exactly_one_of "--opt1" "val1" "--opt2" "val2" "--opt3" "" "--opt4" ""
+#   assert_exactly_one_of "--opt1" "" "--opt2" "" "--opt3" "" "--opt4" ""
+function assert_exactly_one_of {
+  local -ra args=("$@")
+  local -r num_args="${#args[@]}"
+  if [[ "$((num_args % 2))" -ne 0 ]]; then
+    log_error "This script expects an even number of arguments but received $num_args instead."
+    exit 1
+  fi
+
+  local num_non_empty=0
+  local -a arg_names=()
+
+  # Determine how many arg_vals are non-empty
+  for (( i=0; i<$((num_args+1)); i+=2 )); do
+    arg_names+=("${args[i]}")
+    if [[ ! -z "${args[i+1]}" ]]; then
+      num_non_empty=$((num_non_empty+1))
+    fi
+  done
+
+  if [[ "$num_non_empty" -ne 1 ]]; then
+    log_error "Exactly one of ${arg_names[*]} must be set."
+    exit 1
+  fi
+}
+
 # Check that this script is running as root or sudo and exit with an error if it's not
 function assert_uid_is_root_or_sudo {
   if ! os_user_is_root_or_sudo; then

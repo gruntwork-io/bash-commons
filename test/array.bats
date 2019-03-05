@@ -38,6 +38,36 @@ load "test-helper"
   assert_failure
 }
 
+@test "array_split on empty string" {
+  local ary=( $(array_split "" "") )
+  status="$?"
+  assert_success
+  assert_equal "" "${ary[0]}"
+}
+
+@test "array_split on single element string" {
+  local ary=( $(array_split "," "test") )
+  status="$?"
+  assert_success
+  assert_equal "test" "${ary[0]}"
+}
+
+@test "array_split on multi element string" {
+  local ary=( $(array_split "," "test0,test1") )
+  status="$?"
+  assert_success
+  assert_equal "test0" "${ary[0]}"
+  assert_equal "test1" "${ary[1]}"
+}
+
+@test "array_split on multi element string with multi character separator" {
+  local ary=( $(array_split "==" "test0==test1") )
+  status="$?"
+  assert_success
+  assert_equal "test0" "${ary[0]}"
+  assert_equal "test1" "${ary[1]}"
+}
+
 @test "array_join on empty array" {
   run array_join ","
   assert_success
@@ -61,3 +91,34 @@ load "test-helper"
   assert_success
   assert_output "foo == bar == baz"
 }
+
+@test "array_prepend on empty string" {
+  local ary=( $(array_prepend "test" "") )
+  status="$?"
+  assert_success
+  assert_equal "" "${ary[0]}"
+}
+
+@test "array_prepend on empty prepend string" {
+  local ary=( $(array_prepend "" "test0" "test1") )
+  status="$?"
+  assert_success
+  assert_equal "test0" "${ary[0]}"
+  assert_equal "test1" "${ary[1]}"
+}
+
+@test "array_prepend on single element string" {
+  local ary=( $(array_prepend "test" "0") )
+  status="$?"
+  assert_success
+  assert_equal "test0" "${ary[0]}"
+}
+
+@test "array_prepend on multi element string" {
+  local ary=( $(array_prepend "test" "0" "1") )
+  status="$?"
+  assert_success
+  assert_equal "test0" "${ary[0]}"
+  assert_equal "test1" "${ary[1]}"
+}
+

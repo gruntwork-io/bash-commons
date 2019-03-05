@@ -84,3 +84,30 @@ function os_get_current_users_group {
 function os_user_is_root_or_sudo {
   [[ "$EUID" == 0 ]]
 }
+
+# Returns a zero exit code if the given $username exists
+function os_user_exists {
+  local -r username="$1"
+  id "$username" >/dev/null 2>&1
+}
+
+# Create an OS user whose name is $username
+function os_create_user {
+  local -r username="$1"
+
+  if os_user_exists "$username"; then
+    log_info "User $username already exists. Will not create again."
+  else
+    log_info "Creating user named $username"
+    useradd "$username"
+  fi
+}
+
+# Change the owner of $dir to $username
+function os_change_dir_owner {
+  local -r dir="$1"
+  local -r username="$2"
+
+  log_info "Changing ownership of $dir to $username"
+  chown -R "$username:$username" "$dir"
+}
