@@ -89,7 +89,7 @@ function assert_exactly_one_of {
   local -a arg_names=()
 
   # Determine how many arg_vals are non-empty
-  for (( i=0; i<$((num_args+1)); i+=2 )); do
+  for (( i=0; i<$((num_args)); i+=2 )); do
     arg_names+=("${args[i]}")
     if [[ ! -z "${args[i+1]}" ]]; then
       num_non_empty=$((num_non_empty+1))
