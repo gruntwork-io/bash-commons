@@ -20,11 +20,11 @@ function array_contains {
 #
 # Examples:
 #
-# array_split "a,b,c" ","
+# array_split "," "a,b,c"
 #   Returns: ("a" "b" "c")
 #
 # Hint:
-# When calling this function, use the following construction: ary=( $(array_split "a,b,c" ",") )
+# When calling this function, use the following construction: ary=( $(array_split "," "a,b,c") )
 #
 # Sources:
 # - https://stackoverflow.com/a/15988793/2308858
