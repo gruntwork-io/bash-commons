@@ -8,10 +8,10 @@ services:
       - ./:/usr/local/src/bash-commons
     working_dir: /usr/local/src/bash-commons/.circleci
     command: ./shellcheck.sh
-  bats:
+  bats_ubuntu1604:
     build:
       context: ./
-      dockerfile: Dockerfile.bats
+      dockerfile: Dockerfile.ubuntu16.04.bats
     volumes:
       # Mount all the files so you have "hot reload" of all changes from the host
       - ./:/usr/local/src/bash-commons
@@ -19,8 +19,14 @@ services:
     command: bats test
     # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
     privileged: true
-    ports:
-      # For moto
-      - "5000:5000"
-      # For ec2-metadata-mock
-      - "8111:8111"
+  bats_ubuntu1804:
+    build:
+      context: ./
+      dockerfile: Dockerfile.ubuntu18.04.bats
+    volumes:
+      # Mount all the files so you have "hot reload" of all changes from the host
+      - ./:/usr/local/src/bash-commons
+    working_dir: /usr/local/src/bash-commons
+    command: bats test
+    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
+    privileged: true
