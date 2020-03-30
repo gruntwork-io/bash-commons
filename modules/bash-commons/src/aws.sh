@@ -2,6 +2,9 @@
 # A collection of thin wrappers for direct calls to the AWS CLI and EC2 metadata API. These wrappers exist so that
 # (a) it's more convenient to fetch specific info you need, such as an EC2 Instance's private IP and (b) so you can
 # replace these helpers with mocks to do local testing or unit testing.
+#
+# See also: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html for info 
+# on the metadata endpoint at 169.254.169.254.
 
 # shellcheck source=./modules/bash-commons/src/assert.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
