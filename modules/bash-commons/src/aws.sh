@@ -190,9 +190,9 @@ function aws_get_eni_private_ip {
   eni_id="$(aws_get_eni_id "$network_interfaces_output" "$eni_device_index")"
   log_info "Looking up private IP address for ENI $eni_id"
 
-  public_ip=$(echo "$network_interfaces_output" | jq -j ".NetworkInterfaces[] | select(.NetworkInterfaceId == \"$eni_id\").PrivateIpAddresses[0].PrivateIpAddress")
+  private_ip=$(echo "$network_interfaces_output" | jq -j ".NetworkInterfaces[] | select(.NetworkInterfaceId == \"$eni_id\").PrivateIpAddresses[0].PrivateIpAddress")
 
-  echo "$public_ip"
+  echo "$private_ip"
 }
 
 # Return the private IP Address of the ENI attached to the given EC2 Instance
