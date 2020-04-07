@@ -11,11 +11,14 @@ RUN apt-get install -y software-properties-common && \
     DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y bats
 
+# Upgrade pip
+RUN pip install -U pip
+
 # Install AWS CLI
 RUN pip install awscli --upgrade --user
 
 # Install moto: https://github.com/spulec/moto
-RUN pip install flask moto moto[server]
+RUN pip install flask moto moto[server] networkx==2.2
 
 # Install tools we'll need to create a mock EC2 metadata server
 RUN apt-get install -y net-tools iptables
