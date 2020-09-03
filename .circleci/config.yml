@@ -46,5 +46,6 @@ workflows:
   checks:
     jobs:
       - shellcheck
+      - integration_test
       - bats_ubuntu1604
       - bats_ubuntu1804
