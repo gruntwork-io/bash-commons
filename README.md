@@ -32,13 +32,6 @@ elif os_is_centos; then
 fi
 ```
 
-#### Example of `dynamic-ubuntu-wait.sh` usage:
-Simply call the script by curling it during your existing provisioning/automated installation process:
-
-`curl -LsS https://raw.githubusercontent.com/gruntwork-io/bash-commons/[VERSION]/modules/bash-commons/src/dynamic-ubuntu-wait.sh | bash`
-
-Where `[VERSION]` could be: `v.0.0.3`. The latest release can be found [here](https://github.com/gruntwork-io/bash-commons/releases/latest)
-
 ## Install
 
 The first step is to download the code onto your computer.
@@ -77,6 +70,23 @@ sudo mkdir -p /opt/gruntwork
 cp -r bash-commons/modules/bash-commons/src /opt/gruntwork/bash-commons
 sudo chown -R "my-os-username:my-os-group" /opt/gruntwork/bash-commons
 ```
+
+#### Example of `dynamic-ubuntu-wait.sh` usage:
+
+You can use the `dynamic-ubuntu-wait.sh` command after you [install bash-commons](#install):
+
+```
+bash /opt/gruntwork/bash-commons/dynamic-ubuntu-wait.sh
+```
+
+Alternatively, you can call the script without installing by curling it during your existing provisioning/automated installation process:
+
+```bash
+curl -LsS https://raw.githubusercontent.com/gruntwork-io/bash-commons/[VERSION]/modules/bash-commons/src/dynamic-ubuntu-wait.sh | bash`
+```
+
+Where `[VERSION]` could be: `v0.0.3`. The latest release can be found [here](https://github.com/gruntwork-io/bash-commons/releases/latest)
+
 
 
 
