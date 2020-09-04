@@ -35,7 +35,7 @@
   },{
     "type": "shell",
     "inline": [
-      "sudo apt-get install -y rolldice"
+      "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y rolldice"
     ]
   },{
     "type": "shell",
