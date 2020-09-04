@@ -29,7 +29,7 @@
     "type": "shell",
     "inline": [
       "# Get around issue where automatic ubuntu updates prevent package installation.",
-      "curl -Ls https://raw.githubusercontent.com/gruntwork-io/bash-commons/{{user `module_branch`}}/modules/bash-commons/src/dynamic-ubuntu-wait.sh | bash",
+      "curl -LsS https://raw.githubusercontent.com/gruntwork-io/bash-commons/{{user `module_branch`}}/modules/bash-commons/src/dynamic-ubuntu-wait.sh | bash",
       "sudo apt-get -y update"
     ]
   },{
