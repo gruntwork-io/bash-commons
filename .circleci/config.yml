@@ -46,6 +46,7 @@ workflows:
   checks:
     jobs:
       - shellcheck
-      - integration_test
+      - integration_test:
+          context: Gruntwork Admin
       - bats_ubuntu1604
       - bats_ubuntu1804
