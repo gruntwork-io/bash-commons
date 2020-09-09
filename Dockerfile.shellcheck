@@ -2,7 +2,7 @@ FROM bash:3.2
 
 # TODO: labels here. See: http://label-schema.org/rc1/
 
-ARG SHELLCHECK_VERSION=stable
+ARG SHELLCHECK_VERSION=v0.7.1
 ARG SHELLCHECK_FORMAT=gcc
 
 # Install dependencies.
@@ -16,9 +16,7 @@ RUN set -e; \
 # Install shellcheck.
 RUN set -e; \
     mkdir -p ~/stage \
-    && wget "https://storage.googleapis.com/shellcheck/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
-    && wget "https://storage.googleapis.com/shellcheck/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz.sha512sum" \
-    && sha512 -c shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz.sha512sum \
+    && wget "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
     && tar --xz -xvf shellcheck-"${SHELLCHECK_VERSION}".linux.x86_64.tar.xz \
     && cp shellcheck-"${SHELLCHECK_VERSION}"/shellcheck /usr/bin/ \
     && shellcheck --version \

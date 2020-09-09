@@ -6,6 +6,25 @@ jobs:
       - checkout
       - run: docker-compose up shellcheck
 
+  integration_test:
+    docker:
+      - image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:go1.14
+    steps:
+      - checkout
+      - run:
+          name: run tests
+          command: |
+            mkdir -p /tmp/logs
+            run-go-tests --path integration-test --timeout 2h | tee /tmp/logs/all.log
+          no_output_timeout: 3600s
+      - run:
+          command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
+          when: always
+      - store_artifacts:
+          path: /tmp/logs
+      - store_test_results:
+          path: /tmp/logs
+
   bats_ubuntu1604:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
@@ -27,5 +46,7 @@ workflows:
   checks:
     jobs:
       - shellcheck
+      - integration_test:
+          context: Gruntwork Admin
       - bats_ubuntu1604
       - bats_ubuntu1804
