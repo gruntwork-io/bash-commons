@@ -15,7 +15,8 @@ RUN apt-get install -y software-properties-common && \
 RUN pip install awscli --upgrade --user
 
 # Install moto: https://github.com/spulec/moto
-RUN pip install flask moto moto[server]
+# Lock cfn-lint and pysistent to last known working versions
+RUN pip install flask moto moto[server] cfn-lint==0.35.1 pyrsistent==0.16.0
 
 # Install tools we'll need to create a mock EC2 metadata server
 RUN apt-get install -y net-tools iptables
