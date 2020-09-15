@@ -233,3 +233,40 @@ function aws_describe_instances_in_asg {
 
   aws ec2 describe-instances --region "$aws_region" --filters "Name=tag:aws:autoscaling:groupName,Values=$asg_name" "Name=instance-state-name,Values=pending,running"
 }
+
+function store_in_secrets_manager {
+  local -r name="$1"
+  local -r description="$2"
+  local -r value="$3"
+  local -r region="$4"
+
+  log "Creating secret '$name' in AWS Secrets Manager."
+  aws secretsmanager create-secret \
+    --region "$region" \
+    --name "$name" \
+    --description "$description" \
+    --secret-string "$value" 1>&2
+}
+
+function read_from_secrets_manager {
+  local -r name="$1"
+  local -r region="$2"
+
+  local -r max_retries=3
+  local -r time_between_retries_sec=3
+  local secret_value
+
+  for (( c=0; c<"$max_retries"; c++ )); do
+    log "Looking up secret '$name' in AWS Secrets Manager."
+    if secret_value=$(aws secretsmanager get-secret-value --region "$region" --secret-id "$name" --query "SecretString" --output "text"); then
+      echo -n "$secret_value"
+      return
+    fi
+
+    log "Did not find secret '$name' in AWS Secrets Manager. This may be due to eventual consistency. Will sleep for $time_between_retries_sec seconds and try again."
+    sleep "$time_between_retries_sec"
+  done
+
+  log "Could not find secret '$name' in AWS Secrets Manager after $max_retries retries."
+  exit 1
+}
