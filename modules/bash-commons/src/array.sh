@@ -82,3 +82,47 @@ function array_prepend {
   updated_ary=( "${ary[@]/#/$prefix}" )
   echo ${updated_ary[*]}
 }
+
+# Applies a functional reduce to an array of arguments. Supports mathmatical expressions only (see man expr)
+# The first argument should be a single quoted string representing a statment to evaluate values with. It 
+# expects the following variables, expanded as:
+#   $1 - the reducer, starting at the first value in the array, the resulting value of the entire expression 
+#        becomes this value on the next call
+#   $2 - the next item in the array
+#
+# Synopsis:
+#
+# array_reduce <expression> <elements>...
+#
+# Examples:
+# 
+# array_reduce '$1 * $2' 1 2 3 4 5
+#   Returns: 120
+#
+# Hint: In the expression string, $1 is initialized to the first element in the array, and $2 starts as the second element.
+function array_reduce {
+    local -r expression="$1"
+    shift
+    local reducer="$1"
+    shift
+    local ary=("$@")
+
+    for (( i=0; i<"${#ary[@]}"; i++ )); do
+        echo "${ary[i]}"
+
+        # Expand the expression to be evaluated, by replacing $1 and $2 with the reducer and next array element, respectively
+        # Additionally, make modify '*' to the multiplication token used by expr ('\*') for convience.
+        local expression_expanded="$(printf "$expression" | sed "s/\$1/$reducer/; s/\$2/${ary[i]}/; s/\([^\\]\)\*/\1\\\*/" )"
+        echo $reducer_expanded
+        echo $expression_expanded
+
+        # update the reducer with the result of the next element evaluated by the expression.
+        reducer=$(eval "expr $expression_expanded")
+        if ((  "$?" > "1" )); then
+            >&2 echo "failed on expression $expression_expanded"
+            return 1
+        fi
+    done
+
+    echo $reducer
+}
