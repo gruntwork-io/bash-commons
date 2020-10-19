@@ -122,3 +122,24 @@ load "test-helper"
   assert_equal "test1" "${ary[1]}"
 }
 
+@test "array_reduce on single element" {
+  run array_reduce '$1' "1"
+  status="$?"
+  assert_success
+  assert_output "1"  
+}
+
+@test "array_reduce on multi element" {
+  run array_reduce '$1 + $2' "1" "2" "3"
+  status="$?"
+  assert_success
+  assert_output "6"
+}
+
+@test "array_reduce on duplicate reducer variable" {
+  run array_reduce '$1 - $2 * $1' "5" "3" "2"
+  status="$?"
+  assert_success
+  assert_output "10"
+}
+
