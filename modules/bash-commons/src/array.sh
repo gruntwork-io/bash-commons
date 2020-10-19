@@ -102,10 +102,9 @@ function array_prepend {
 # Hint: In the expression string, $1 is initialized to the first element in the array, and $2 starts as the second element.
 function array_reduce {
     local -r expression="$1"
+    local reducer="$2"
     shift
-    local reducer="$1"
-    shift
-    local ary=("$@")
+    local -ar ary=("$@")
 
     for (( i=0; i<"${#ary[@]}"; i++ )); do
         echo "${ary[i]}"
@@ -118,11 +117,11 @@ function array_reduce {
 
         # update the reducer with the result of the next element evaluated by the expression.
         reducer=$(eval "expr $expression_expanded")
-        if ((  "$?" > "1" )); then
+        if [[  "$?" -ne 0 ]]; then
             >&2 echo "failed on expression $expression_expanded"
             return 1
         fi
     done
 
-    echo $reducer
+    echo "$reducer"
 }
