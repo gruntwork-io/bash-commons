@@ -112,7 +112,7 @@ function array_reduce {
         local expression_expanded="$(printf "$expression" | sed "s/\$1/$reducer/g; s/\$2/${ary[i]}/g" )"
 
         # update the reducer with the result of the next element evaluated by the expression.
-        reducer=$(eval "expr $expression_expanded")
+        reducer="$(( $expression_expanded ))"
         if [[  "$?" -ne 0 ]]; then
             >&2 echo "failed on expression $expression_expanded"
             return 1
