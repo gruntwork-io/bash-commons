@@ -103,9 +103,8 @@ function array_prepend {
 function array_reduce {
     local -r expression="$1"
     local reducer="$2"
-    shift
+    shift 2
     local -ar ary=("$@")
-
     for (( i=0; i<"${#ary[@]}"; i++ )); do
         # Expand the expression to be evaluated, by replacing $1 and $2 with the reducer and next array element, respectively
         # Additionally, make modify '*' to the multiplication token used by expr ('\*') for convience.
