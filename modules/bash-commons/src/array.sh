@@ -83,7 +83,7 @@ function array_prepend {
   echo ${updated_ary[*]}
 }
 
-# Applies a functional reduce to an array of arguments. Supports mathmatical expressions only (see man expr)
+# Applies a functional reduce to an array of arguments. Supports mathmatical expressions only.
 # The first argument should be a single quoted string representing a statment to evaluate values with. It 
 # expects the following variables, expanded as:
 #   $1 - the reducer, starting at the first value in the array, the resulting value of the entire expression 
