@@ -109,7 +109,7 @@ function array_reduce {
     for (( i=0; i<"${#ary[@]}"; i++ )); do
         # Expand the expression to be evaluated, by replacing $1 and $2 with the reducer and next array element, respectively
         # Additionally, make modify '*' to the multiplication token used by expr ('\*') for convience.
-        local expression_expanded="$(printf "$expression" | sed "s/\$1/$reducer/; s/\$2/${ary[i]}/; s/\([^\\]\)\*/\1\\\*/" )"
+        local expression_expanded="$(printf "$expression" | sed "s/\$1/$reducer/g; s/\$2/${ary[i]}/g" )"
 
         # update the reducer with the result of the next element evaluated by the expression.
         reducer=$(eval "expr $expression_expanded")
