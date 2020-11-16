@@ -36,6 +36,10 @@ function os_is_redhat {
   grep -q "Red Hat Enterprise Linux Server release $version" /etc/*release
 }
 
+# Returns true (0) if this is a WSL kernel or false (1) otherwise.
+function os_is_wsl_kernel {
+  [[ $(uname -r | tail -c19) == "microsoft-standard" ]]
+}
 
 # Returns true (0) if this is an OS X server or false (1) otherwise.
 function os_is_darwin {
