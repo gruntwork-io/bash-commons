@@ -41,15 +41,9 @@ workflows:
   version: 2
   checks:
     jobs:
-      - shellcheck:
-          context:
-            - Gruntwork Admin
+      - shellcheck
       - integration_test:
           context:
             - Gruntwork Admin
-      - bats_ubuntu1604:
-          context:
-            - Gruntwork Admin
-      - bats_ubuntu1804:
-          context:
-            - Gruntwork Admin
+      - bats_ubuntu1604
+      - bats_ubuntu1804
