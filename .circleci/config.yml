@@ -5,7 +5,6 @@ jobs:
     steps:
       - checkout
       - run: docker-compose up shellcheck
-
   integration_test:
     docker:
       - image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:go1.14
@@ -24,7 +23,6 @@ jobs:
           path: /tmp/logs
       - store_test_results:
           path: /tmp/logs
-
   bats_ubuntu1604:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
@@ -32,7 +30,6 @@ jobs:
     steps:
       - checkout
       - run: docker-compose up bats_ubuntu1604
-
   bats_ubuntu1804:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
@@ -40,13 +37,13 @@ jobs:
     steps:
       - checkout
       - run: docker-compose up bats_ubuntu1804
-
 workflows:
   version: 2
   checks:
     jobs:
       - shellcheck
       - integration_test:
-          context: Gruntwork Admin
+          context:
+            - Gruntwork Admin
       - bats_ubuntu1604
       - bats_ubuntu1804
