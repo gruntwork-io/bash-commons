@@ -1312,3 +1312,197 @@ END_HEREDOC
   assert_success
   assert_equal "ip-10-251-50-12.ec2.internal" "$out"
 }
+
+@test "aws_wrapper_get_asg_rally_point by_instance_id" {
+  local readonly asg_name="foo"
+  local readonly size=3
+  local readonly aws_region="us-west-2"
+
+  local readonly asg=$(cat <<END_HEREDOC
+{
+    "AutoScalingGroups": [
+        {
+            "AutoScalingGroupARN": "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:930d940e-891e-4781-a11a-7b0acd480f03:autoScalingGroupName/$asg_name",
+            "DesiredCapacity": $size,
+            "AutoScalingGroupName": "$asg_name",
+            "MinSize": 0,
+            "MaxSize": 10,
+            "LaunchConfigurationName": "my-launch-config",
+            "CreatedTime": "2013-08-19T20:53:25.584Z",
+            "AvailabilityZones": [
+                "${aws_region}c"
+            ]
+        }
+    ]
+}
+END_HEREDOC
+)
+
+  local readonly instances=$(cat <<END_HEREDOC
+{
+  "Reservations": [
+    {
+      "Instances": [
+        {
+          "LaunchTime": "2013-08-19T20:53:25.584Z",
+          "InstanceId": "i-1234567890abcdef0",
+          "PublicIpAddress": "55.66.77.88",
+          "PrivateIpAddress": "11.22.33.44",
+          "PrivateDnsName": "ip-10-251-50-12.ec2.internal",
+          "PublicDnsName": "ec2-203-0-113-25.compute-1.amazonaws.com",
+          "Tags": [
+            {
+              "Value": "$asg_name",
+              "Key": "aws:autoscaling:groupName"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Instances": [
+        {
+          "LaunchTime": "2013-08-19T20:53:25.584Z",
+          "InstanceId": "i-1234567890abcdef1",
+          "PublicIpAddress": "55.66.77.881",
+          "PrivateIpAddress": "11.22.33.441",
+          "PrivateDnsName": "ip-10-251-50-121.ec2.internal",
+          "PublicDnsName": "ec2-203-0-113-252.compute-1.amazonaws.com",
+          "Tags": [
+            {
+              "Value": "$asg_name",
+              "Key": "aws:autoscaling:groupName"
+            }
+          ]
+        },
+        {
+          "LaunchTime": "2013-08-19T20:53:25.584Z",
+          "InstanceId": "i-1234567890abcdef2",
+          "PublicIpAddress": "55.66.77.882",
+          "PrivateIpAddress": "11.22.33.442",
+          "PrivateDnsName": "ip-10-251-50-122.ec2.internal",
+          "PublicDnsName": "ec2-203-0-113-253.compute-1.amazonaws.com",
+          "Tags": [
+            {
+              "Value": "$asg_name",
+              "Key": "aws:autoscaling:groupName"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+END_HEREDOC
+)
+
+  load_aws_mock "" "$asg" "$instances"
+
+  local out
+
+  out=$(aws_wrapper_get_asg_rally_point $asg_name $aws_region)
+  assert_success
+  assert_equal "$out" "ip-10-251-50-12.ec2.internal"
+
+  out=$(aws_wrapper_get_asg_rally_point $asg_name $aws_region true)
+  assert_success
+  assert_equal "$out" "ec2-203-0-113-25.compute-1.amazonaws.com"
+
+}
+
+@test "aws_wrapper_get_asg_rally_point by_launch_time" {
+  local readonly asg_name="foo"
+  local readonly size=3
+  local readonly aws_region="us-west-2"
+
+  local readonly asg=$(cat <<END_HEREDOC
+{
+    "AutoScalingGroups": [
+        {
+            "AutoScalingGroupARN": "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:930d940e-891e-4781-a11a-7b0acd480f03:autoScalingGroupName/$asg_name",
+            "DesiredCapacity": $size,
+            "AutoScalingGroupName": "$asg_name",
+            "MinSize": 0,
+            "MaxSize": 10,
+            "LaunchConfigurationName": "my-launch-config",
+            "CreatedTime": "2013-08-19T20:53:25.584Z",
+            "AvailabilityZones": [
+                "${aws_region}c"
+            ]
+        }
+    ]
+}
+END_HEREDOC
+)
+
+  local readonly instances=$(cat <<END_HEREDOC
+{
+  "Reservations": [
+    {
+      "Instances": [
+        {
+          "LaunchTime": "2013-08-19T20:53:25.584Z",
+          "InstanceId": "i-1234567890abcdef0",
+          "PublicIpAddress": "55.66.77.88",
+          "PrivateIpAddress": "11.22.33.44",
+          "PrivateDnsName": "ip-10-251-50-12.ec2.internal",
+          "PublicDnsName": "ec2-203-0-113-25.compute-1.amazonaws.com",
+          "Tags": [
+            {
+              "Value": "$asg_name",
+              "Key": "aws:autoscaling:groupName"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Instances": [
+        {
+          "LaunchTime": "2013-08-19T20:53:25.584Z",
+          "InstanceId": "i-1234567890abcdef1",
+          "PublicIpAddress": "55.66.77.881",
+          "PrivateIpAddress": "11.22.33.441",
+          "PrivateDnsName": "ip-10-251-50-121.ec2.internal",
+          "PublicDnsName": "ec2-203-0-113-252.compute-1.amazonaws.com",
+          "Tags": [
+            {
+              "Value": "$asg_name",
+              "Key": "aws:autoscaling:groupName"
+            }
+          ]
+        },
+        {
+          "LaunchTime": "2013-08-19T20:53:24.584Z",
+          "InstanceId": "i-1234567890abcdef2",
+          "PublicIpAddress": "55.66.77.882",
+          "PrivateIpAddress": "11.22.33.442",
+          "PrivateDnsName": "ip-10-251-50-122.ec2.internal",
+          "PublicDnsName": "ec2-203-0-113-253.compute-1.amazonaws.com",
+          "Tags": [
+            {
+              "Value": "$asg_name",
+              "Key": "aws:autoscaling:groupName"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+END_HEREDOC
+)
+
+  load_aws_mock "" "$asg" "$instances"
+
+  local out
+
+  out=$(aws_wrapper_get_asg_rally_point $asg_name $aws_region)
+  assert_success
+  assert_equal "$out" "ip-10-251-50-122.ec2.internal"
+
+  out=$(aws_wrapper_get_asg_rally_point $asg_name $aws_region true)
+  assert_success
+  assert_equal "$out" "ec2-203-0-113-253.compute-1.amazonaws.com"
+
+}
