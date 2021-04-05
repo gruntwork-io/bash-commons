@@ -1313,10 +1313,10 @@ END_HEREDOC
   assert_equal "ip-10-251-50-12.ec2.internal" "$out"
 }
 
-@test "aws_wrapper_get_asg_rally_point by_instance_id" {
-  local readonly asg_name="foo"
+function setup_rally_point_by_instance {
+  local readonly asg_name="$1"
+  local readonly aws_region="$2"
   local readonly size=3
-  local readonly aws_region="us-west-2"
 
   local readonly asg=$(cat <<END_HEREDOC
 {
@@ -1397,6 +1397,13 @@ END_HEREDOC
 )
 
   load_aws_mock "" "$asg" "$instances"
+}
+
+@test "aws_wrapper_get_asg_rally_point by instance id, private" {
+  local readonly asg_name="foo"
+  local readonly aws_region="us-west-2"
+
+  setup_rally_point_by_instance $asg_name $aws_region
 
   local out
 
@@ -1404,16 +1411,27 @@ END_HEREDOC
   assert_success
   assert_equal "$out" "ip-10-251-50-12.ec2.internal"
 
+}
+
+@test "aws_wrapper_get_asg_rally_point by instance id, public" {
+  local readonly asg_name="foo"
+  local readonly size=3
+  local readonly aws_region="us-west-2"
+
+  setup_rally_point_by_instance $asg_name $aws_region
+
+  local out
+
   out=$(aws_wrapper_get_asg_rally_point $asg_name $aws_region true)
   assert_success
   assert_equal "$out" "ec2-203-0-113-25.compute-1.amazonaws.com"
 
 }
 
-@test "aws_wrapper_get_asg_rally_point by_launch_time" {
-  local readonly asg_name="foo"
+function setup_rally_point_by_launch_time {
+  local readonly asg_name="$1"
+  local readonly aws_region="$2"
   local readonly size=3
-  local readonly aws_region="us-west-2"
 
   local readonly asg=$(cat <<END_HEREDOC
 {
@@ -1435,7 +1453,7 @@ END_HEREDOC
 END_HEREDOC
 )
 
-  local readonly instances=$(cat <<END_HEREDOC
+local readonly instances=$(cat <<END_HEREDOC
 {
   "Reservations": [
     {
@@ -1494,12 +1512,29 @@ END_HEREDOC
 )
 
   load_aws_mock "" "$asg" "$instances"
+}
+
+@test "aws_wrapper_get_asg_rally_point by launch time, private" {
+  local readonly asg_name="foo"
+  local readonly aws_region="us-west-2"
+
+  setup_rally_point_by_launch_time $asg_name $aws_region
 
   local out
 
   out=$(aws_wrapper_get_asg_rally_point $asg_name $aws_region)
   assert_success
   assert_equal "$out" "ip-10-251-50-122.ec2.internal"
+
+}
+
+@test "aws_wrapper_get_asg_rally_point by launch time, public" {
+  local readonly asg_name="foo"
+  local readonly aws_region="us-west-2"
+
+  setup_rally_point_by_launch_time $asg_name $aws_region
+
+  local out
 
   out=$(aws_wrapper_get_asg_rally_point $asg_name $aws_region true)
   assert_success
