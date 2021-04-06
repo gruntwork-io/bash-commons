@@ -216,8 +216,7 @@ function aws_wrapper_get_hostname {
   fi
 }
 
-# Calculates a rally point instance in an ASG, which is useful in cases where a piece of code needs to be run only
-# once upon provision of the ASG. Based off of https://github.com/gruntwork-io/terraform-aws-couchbase/blob/master/modules/couchbase-commons/couchbase-rally-point.
+# Calculates a "rally point" instance in an ASG and returns its hostname. This is a deterministic way for the instances in an ASG to all pick the same single instance to perform some action: e.g., this instance could become the leader in a cluster or run some initialization script that should only be run once for the entire ASG. Under the hood, this method picks the instance in the ASG with the earliest launch time; in the case of ties, the instance with the earliest instance ID (lexicographically) is returned. This method assumes jq is installed.
 function aws_wrapper_get_asg_rally_point {
   local -r asg_name="$1"
   local -r aws_region="$2"
