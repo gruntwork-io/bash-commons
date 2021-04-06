@@ -221,12 +221,14 @@ function aws_wrapper_get_asg_rally_point {
   local -r asg_name="$1"
   local -r aws_region="$2"
   local -r use_public_hostname="$3"
+  local -r retries="${4:-60}"
+  local -r sleep_between_retries="${5:-5}"
 
   log_info "Calculating rally point for ASG $asg_name in $aws_region"
 
   local instances
   log_info "Waiting for all instances to be available..."
-  instances=$(aws_wrapper_wait_for_instances_in_asg $asg_name $aws_region)
+  instances=$(aws_wrapper_wait_for_instances_in_asg $asg_name $aws_region $retries $sleep_between_retries)
   assert_not_empty_or_null "$instances" "Wait for instances in ASG $asg_name in $aws_region"
 
   local rally_point
