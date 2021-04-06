@@ -12,9 +12,9 @@ RUN apt-get install -y software-properties-common && \
     apt-get install -y bats
 
 # Install AWS CLI
-RUN sudo apt install python3-distutils python3-apt -y && \
-    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
-    sudo update-alternatives --config python && \
+RUN apt install python3-distutils python3-apt -y && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
+    update-alternatives --config python && \
     curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py && \
     python /tmp/get-pip.py && \
     pip install awscli --upgrade --user
@@ -29,3 +29,7 @@ RUN apt-get install -y net-tools iptables
 
 # Copy mock AWS CLI into the PATH
 COPY ./.circleci/aws-local.sh /usr/local/bin/aws
+
+# These have been added to resolve some encoding error issues with the tests
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
