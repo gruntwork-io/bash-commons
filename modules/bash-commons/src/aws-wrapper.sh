@@ -215,3 +215,36 @@ function aws_wrapper_get_hostname {
     aws_get_instance_private_hostname
   fi
 }
+
+# Calculates a "rally point" instance in an ASG and returns its hostname. This is a deterministic way for the instances in an ASG to all pick the same single instance to perform some action: e.g., this instance could become the leader in a cluster or run some initialization script that should only be run once for the entire ASG. Under the hood, this method picks the instance in the ASG with the earliest launch time; in the case of ties, the instance with the earliest instance ID (lexicographically) is returned. This method assumes jq is installed.
+function aws_wrapper_get_asg_rally_point {
+  local -r asg_name="$1"
+  local -r aws_region="$2"
+  local -r use_public_hostname="$3"
+  local -r retries="${4:-60}"
+  local -r sleep_between_retries="${5:-5}"
+
+  log_info "Calculating rally point for ASG $asg_name in $aws_region"
+
+  local instances
+  log_info "Waiting for all instances to be available..."
+  instances=$(aws_wrapper_wait_for_instances_in_asg $asg_name $aws_region $retries $sleep_between_retries)
+  assert_not_empty_or_null "$instances" "Wait for instances in ASG $asg_name in $aws_region"
+
+  local rally_point
+  rally_point=$(echo "$instances" | jq -r '[.Reservations[].Instances[]] | sort_by(.LaunchTime, .InstanceId) | .[0]')
+  assert_not_empty_or_null "$rally_point" "Select rally point server in ASG $asg_name"
+
+  local hostname_field=".PrivateDnsName"
+  if [[ "$use_public_hostname" == "true" ]]; then
+    hostname_field=".PublicDnsName"
+  fi
+
+  log_info "Hostname field is $hostname_field"
+
+  local hostname
+  hostname=$(echo "$rally_point" | jq -r "$hostname_field")
+  assert_not_empty_or_null "$hostname" "Get hostname from field $hostname_field for rally point in $asg_name: $rally_point"
+  
+  echo -n "$hostname"
+}
