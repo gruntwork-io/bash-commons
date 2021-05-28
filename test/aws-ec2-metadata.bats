@@ -4,6 +4,7 @@ source "$BATS_TEST_DIRNAME/../modules/bash-commons/src/aws.sh"
 load "test-helper"
 load "aws-helper"
 
+readonly api_token="AQAEAArLzfm8TnzVoAFYcAnoJEyfLlx8itHCZvI9AY_OfCFiaYNK2w=="
 readonly local_ipv4="11.22.33.44"
 readonly public_ipv4="55.66.77.88"
 readonly local_hostname="ip-10-251-50-12.ec2.internal"
@@ -14,6 +15,7 @@ readonly availability_zone="${mock_region}b"
 
 function setup {
   start_ec2_metadata_mock \
+    "$api_token" \
     "$local_ipv4" \
     "$public_ipv4" \
     "$local_hostname" \
@@ -25,6 +27,12 @@ function setup {
 
 function teardown {
   stop_ec2_metadata_mock
+}
+
+@test "aws_get_api_token" {
+  run aws_get_api_token
+  assert_success
+  assert_output "$api_token"
 }
 
 @test "aws_get_instance_private_ip" {

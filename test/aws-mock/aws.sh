@@ -4,6 +4,11 @@
 
 set -e
 
+# Get a API session token
+function aws_get_api_token {
+  echo -n "AQAEAArLzfm8TnzVoAFYcAnoJEyfLlx8itHCZvI9AY_OfCFiaYNK2w=="
+}
+
 # Get the private IP address for this EC2 Instance
 function aws_get_instance_private_ip {
   echo -n "11.22.33.44"

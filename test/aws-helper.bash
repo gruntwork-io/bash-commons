@@ -14,13 +14,14 @@ readonly EC2_METADATA_MOCK_LOG_FILE_PATH="$EC2_METADATA_MOCK_TMP_DIR/ec2-metadat
 
 function start_ec2_metadata_mock {
   # Set env vars for ec2-metadata-mock
-  export meta_data_local_ipv4="$1"
-  export meta_data_public_ipv4="$2"
-  export meta_data_local_hostname="$3"
-  export meta_data_public_hostname="$4"
-  export meta_data_instance_id="$5"
-  local readonly region="$6"
-  export meta_data_placement__availability_zone="$7"
+  export api_token="$1"
+  export meta_data_local_ipv4="$2"
+  export meta_data_public_ipv4="$3"
+  export meta_data_local_hostname="$4"
+  export meta_data_public_hostname="$5"
+  export meta_data_instance_id="$6"
+  local readonly region="$7"
+  export meta_data_placement__availability_zone="$8"
   export dynamic_data_instance_identity__document=$(cat <<END_HEREDOC
 {
   "devpayProductCodes" : null,
