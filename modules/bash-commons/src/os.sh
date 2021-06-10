@@ -91,23 +91,35 @@ function os_user_exists {
   id "$username" >/dev/null 2>&1
 }
 
-# Create an OS user whose name is $username
+# Create an OS user whose name is $username. If true is passed in as the second arg, run the commands with sudo.
 function os_create_user {
   local -r username="$1"
+  local -r with_sudo="$2"
+
+  local exuseradd='useradd'
+  if [[ "$with_sudo" == 'true' ]]; then
+    exuseradd='sudo useradd'
+  fi
 
   if os_user_exists "$username"; then
     log_info "User $username already exists. Will not create again."
   else
     log_info "Creating user named $username"
-    useradd "$username"
+    "$exuseradd" "$username"
   fi
 }
 
-# Change the owner of $dir to $username
+# Change the owner of $dir to $username. If true is passed in as the last arg, run the command with sudo.
 function os_change_dir_owner {
   local -r dir="$1"
   local -r username="$2"
+  local -r with_sudo="$3"
+
+  local exchown='chown'
+  if [[ "$with_sudo" == 'true' ]]; then
+    exchown='sudo chown'
+  fi
 
   log_info "Changing ownership of $dir to $username"
-  chown -R "$username:$username" "$dir"
+  "$exchown" -R "$username:$username" "$dir"
 }
