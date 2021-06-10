@@ -11,16 +11,26 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
 # shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 
+function aws_get_api_token {
+  curl --silent -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60"
+}
+
 # Look up the given path in the EC2 Instance metadata endpoint
 function aws_lookup_path_in_instance_metadata {
   local -r path="$1"
-  curl --silent --show-error --location "http://169.254.169.254/latest/meta-data/$path/"
+
+  local token
+  token="$(aws_get_api_token)"
+  curl --silent --show-error --location "http://169.254.169.254/latest/meta-data/$path/" -H "X-aws-ec2-metadata-token: $token"
 }
 
 # Look up the given path in the EC2 Instance dynamic metadata endpoint
 function aws_lookup_path_in_instance_dynamic_data {
   local -r path="$1"
-  curl --silent --show-error --location "http://169.254.169.254/latest/dynamic/$path/"
+
+  local token
+  token="$(aws_get_api_token)"
+  curl --silent --show-error --location "http://169.254.169.254/latest/dynamic/$path/" -H "X-aws-ec2-metadata-token: $token"
 }
 
 # Get the private IP address for this EC2 Instance

@@ -13,8 +13,13 @@ from flask import Flask
 
 app = Flask(__name__)
 
+API_ENV_VAR_PREFIX = 'api'
 META_DATA_ENV_VAR_PREFIX = 'meta_data'
 DYNAMIC_DATA_ENV_VAR_PREFIX = 'dynamic_data'
+
+@app.route("/latest/api/<path:path>", methods=['PUT'])
+def api():
+    return lookup_path(path, API_ENV_VAR_PREFIX)
 
 @app.route("/latest/meta-data/<path:path>")
 def meta_data(path):
