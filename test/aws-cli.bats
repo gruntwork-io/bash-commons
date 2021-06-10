@@ -16,7 +16,7 @@ function teardown {
   run aws_get_instance_tags "fake-id" "us-east-1"
   assert_success
 
-  local readonly expected=$(cat <<END_HEREDOC
+  local -r expected=$(cat <<END_HEREDOC
 {
   "Tags": []
 }
@@ -27,8 +27,8 @@ END_HEREDOC
 }
 
 @test "aws_get_instance_tags non-empty" {
-  local readonly tag_key="foo"
-  local readonly tag_value="bar"
+  local -r tag_key="foo"
+  local -r tag_value="bar"
 
   local instance_id
   instance_id=$(create_mock_instance_with_tags "$tag_key" "$tag_value")
@@ -36,7 +36,7 @@ END_HEREDOC
   run aws_get_instance_tags "$instance_id" "us-east-1"
   assert_success
 
-  local readonly expected=$(cat <<END_HEREDOC
+  local -r expected=$(cat <<END_HEREDOC
 {
    "Tags": [
      {
@@ -72,7 +72,7 @@ END_HEREDOC
   run aws_describe_asg "fake-asg-name" "us-east-1"
   assert_success
 
-  local readonly expected=$(cat <<END_HEREDOC
+  local -r expected=$(cat <<END_HEREDOC
 {
   "AutoScalingGroups": []
 }
@@ -82,12 +82,23 @@ END_HEREDOC
   assert_output_json "$expected"
 }
 
+# not ok 61 aws_describe_asg non-empty
+# (from function `create_mock_asg' in file test/aws-helper.bash, line 141,
+#  in test file test/aws-cli.bats, line 92)
+#   `create_mock_asg "$asg_name" "$min_size" "$max_size" "$azs"' failed with status 255
+#  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+# 127.0.0.1 - - [10/Jun/2021 19:42:02] "POST / HTTP/1.1" 400 -
+#
+# An error occurred (ValidationError) when calling the CreateLaunchConfiguration operation: Valid requests must contain either the InstanceID parameter or both the ImageId and InstanceType pa
+
+# Received signal 15
+
 @test "aws_describe_asg non-empty" {
-  local readonly asg_name="foo"
-  local readonly min_size=1
-  local readonly max_size=3
-  local readonly region="us-east-1"
-  local readonly azs="${region}a"
+  local -r asg_name="foo"
+  local -r min_size=1
+  local -r max_size=3
+  local -r region="us-east-1"
+  local -r azs="${region}a"
 
   create_mock_asg "$asg_name" "$min_size" "$max_size" "$azs"
 
@@ -111,7 +122,7 @@ END_HEREDOC
   run aws_describe_instances_in_asg "fake-asg-name" "us-east-1"
   assert_success
 
-  local readonly expected=$(cat <<END_HEREDOC
+  local -r expected=$(cat <<END_HEREDOC
 {
   "Reservations": []
 }
@@ -122,11 +133,11 @@ END_HEREDOC
 }
 
 @test "aws_describe_instances_in_asg non-empty" {
-  local readonly asg_name="foo"
-  local readonly min_size=1
-  local readonly max_size=3
-  local readonly region="us-east-1"
-  local readonly azs="${region}a"
+  local -r asg_name="foo"
+  local -r min_size=1
+  local -r max_size=3
+  local -r region="us-east-1"
+  local -r azs="${region}a"
 
   create_mock_asg "$asg_name" "$min_size" "$max_size" "$azs"
 
@@ -142,7 +153,7 @@ END_HEREDOC
   run aws_get_instances_with_tag "Name" "Value" "us-east-1"
   assert_success
 
-  local readonly expected=$(cat <<END_HEREDOC
+  local -r expected=$(cat <<END_HEREDOC
 {
   "Reservations": []
 }

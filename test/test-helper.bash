@@ -12,7 +12,7 @@ flunk() {
 
 # Adapted from https://unix.stackexchange.com/a/230676/215969
 unique_id() {
-  local readonly length="$1"
+  local -r length="$1"
   head /dev/urandom | tr -dc A-Za-z0-9 | head -c "$length" ; echo ''
 }
 
@@ -49,18 +49,30 @@ assert_equal_regex() {
 }
 
 assert_equal_json() {
-  local readonly expected="$1"
-  local readonly actual="$2"
+  local -r expected="$1"
+  local -r actual="$2"
 
-  local expected_json
-  expected_json=$(echo "$expected" | jq -r '.')
+  # To avoid false negatives resulting from unordered keys, we do the equality check in python.
+  local -r checker_py=$(cat <<END_HEREDOC
+import json
+expected_raw = '''
+$expected
+'''
+expected_json = json.loads(expected_raw)
+actual_raw = '''
+$actual
+'''
+actual_json = json.loads(actual_raw)
+print(expected_json == actual_json)
+END_HEREDOC
+)
 
-  local actual_json
-  actual_json=$(echo "$actual" | jq -r '.')
+  local result
+  result="$(python3 -c "$checker_py")"
 
-  if [[ "$expected_json" != "$actual_json" ]]; then
-    { echo "expected: $expected_json"
-      echo "actual:   $actual_json"
+  if [[ "$result" != 'True' ]]; then
+    { echo "expected: $expected"
+      echo "actual:   $actual"
     } | flunk
   fi
 }

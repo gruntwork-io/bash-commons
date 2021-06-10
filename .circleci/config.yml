@@ -55,3 +55,4 @@ workflows:
             - Gruntwork Admin
       - bats_ubuntu1604
       - bats_ubuntu1804
+      - bats_ubuntu2004
