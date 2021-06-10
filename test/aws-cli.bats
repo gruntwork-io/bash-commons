@@ -82,17 +82,6 @@ END_HEREDOC
   assert_output_json "$expected"
 }
 
-# not ok 61 aws_describe_asg non-empty
-# (from function `create_mock_asg' in file test/aws-helper.bash, line 141,
-#  in test file test/aws-cli.bats, line 92)
-#   `create_mock_asg "$asg_name" "$min_size" "$max_size" "$azs"' failed with status 255
-#  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
-# 127.0.0.1 - - [10/Jun/2021 19:42:02] "POST / HTTP/1.1" 400 -
-#
-# An error occurred (ValidationError) when calling the CreateLaunchConfiguration operation: Valid requests must contain either the InstanceID parameter or both the ImageId and InstanceType pa
-
-# Received signal 15
-
 @test "aws_describe_asg non-empty" {
   local -r asg_name="foo"
   local -r min_size=1
