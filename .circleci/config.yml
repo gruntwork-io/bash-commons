@@ -4,7 +4,7 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: docker-compose up shellcheck --exit-code-from shellcheck
+      - run: docker-compose up --exit-code-from shellcheck shellcheck
   integration_test:
     docker:
       - image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:go1.14
