@@ -105,7 +105,7 @@ function os_create_user {
     log_info "User $username already exists. Will not create again."
   else
     log_info "Creating user named $username"
-    "$exuseradd" "$username"
+    $exuseradd "$username"
   fi
 }
 
@@ -121,5 +121,5 @@ function os_change_dir_owner {
   fi
 
   log_info "Changing ownership of $dir to $username"
-  "$exchown" -R "$username:$username" "$dir"
+  $exchown -R "$username:$username" "$dir"
 }
