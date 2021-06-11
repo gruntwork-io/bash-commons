@@ -80,7 +80,7 @@ function string_substr {
   fi
 
   if [[ -z "$end" ]]; then
-    end=${#str}
+    end="${#str}"
   fi
 
   echo "${str:$start:$end}"
