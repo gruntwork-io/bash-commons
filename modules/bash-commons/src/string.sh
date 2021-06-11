@@ -56,3 +56,32 @@ function string_is_empty_or_null {
   local -r response="$1"
   [[ -z "$response" || "$response" == "null" ]]
 }
+
+
+# Given a string $str, return the substring beginning at index $start and ending at index $end.
+#
+# Example:
+#
+# string_substr "hello world" 0 5
+#   Returns "hello"
+function string_substr {
+  local -r str="$1"
+  local -r start="$2"
+  local end="$3"
+
+  if [[ "$start" -lt 0 || "$end" -lt 0 ]]; then
+    log_error "In the string_substr bash function, each of \$start and \$end must be >= 0."
+    exit 1
+  fi
+
+  if [[ "$start" -gt "$end" ]]; then
+    log_error "In the string_substr bash function, \$start must be < \$end."
+    exit 1
+  fi
+
+  if [[ -z "$end" ]]; then
+    end="${#str}"
+  fi
+
+  echo "${str:$start:$end}"
+}

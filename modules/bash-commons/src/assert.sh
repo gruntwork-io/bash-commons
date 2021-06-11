@@ -91,7 +91,7 @@ function assert_exactly_one_of {
   # Determine how many arg_vals are non-empty
   for (( i=0; i<$((num_args)); i+=2 )); do
     arg_names+=("${args[i]}")
-    if [[ ! -z "${args[i+1]}" ]]; then
+    if [[ -n "${args[i+1]}" ]]; then
       num_non_empty=$((num_non_empty+1))
     fi
   done
@@ -106,6 +106,14 @@ function assert_exactly_one_of {
 function assert_uid_is_root_or_sudo {
   if ! os_user_is_root_or_sudo; then
     log_error "This script should be run using sudo or as the root user"
+    exit 1
+  fi
+}
+
+# Assert that the user running this script has permissions to run sudo.
+function assert_user_has_sudo_perms {
+  if ! sudo -n true >/dev/null 2>&1; then
+    log_error "This script should be run using sudo, as the root user, or as a user with sudo permissions."
     exit 1
   fi
 }

@@ -186,4 +186,13 @@ load "test-helper"
   assert_failure
 }
 
+@test "string_substr empty string" {
+    run string_substr "" 0 0
+    assert_success
+}
 
+@test "string_substr non empty string" {
+    run string_substr "hello world" 0 5
+    assert_success
+    assert_output "hello"
+}
