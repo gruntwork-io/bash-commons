@@ -30,3 +30,14 @@ services:
     command: bats test
     # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
     privileged: true
+  bats_ubuntu2004:
+    build:
+      context: ./
+      dockerfile: Dockerfile.ubuntu20.04.bats
+    volumes:
+      # Mount all the files so you have "hot reload" of all changes from the host
+      - ./:/usr/local/src/bash-commons
+    working_dir: /usr/local/src/bash-commons
+    command: bats test
+    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
+    privileged: true

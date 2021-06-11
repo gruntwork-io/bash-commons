@@ -19,7 +19,7 @@ function start_ec2_metadata_mock {
   export meta_data_local_hostname="$3"
   export meta_data_public_hostname="$4"
   export meta_data_instance_id="$5"
-  local readonly region="$6"
+  local -r region="$6"
   export meta_data_placement__availability_zone="$7"
   export dynamic_data_instance_identity__document=$(cat <<END_HEREDOC
 {
@@ -71,7 +71,7 @@ END_HEREDOC
 function stop_ec2_metadata_mock {
   # Stop ec2-metadata-mock if it's running
   if [[ -f "$EC2_METADATA_MOCK_PID_PATH" ]]; then
-    local readonly pid=$(cat "$EC2_METADATA_MOCK_PID_PATH")
+    local -r pid=$(cat "$EC2_METADATA_MOCK_PID_PATH")
     kill "$pid" 2>&1 > "$EC2_METADATA_MOCK_LOG_FILE_PATH"
     rm -f "$EC2_METADATA_MOCK_PID_PATH"
 
@@ -108,7 +108,7 @@ function start_moto {
 function stop_moto {
   # Stop moto if it's running
   if [[ -f "$MOTO_PID_FILE_PATH" ]]; then
-    local readonly pid=$(cat "$MOTO_PID_FILE_PATH")
+    local -r pid=$(cat "$MOTO_PID_FILE_PATH")
     kill "$pid" 2>&1 > /dev/null
     rm -f "$MOTO_PID_FILE_PATH"
 
@@ -118,8 +118,8 @@ function stop_moto {
 }
 
 function create_mock_instance_with_tags {
-  local readonly tag_key="$1"
-  local readonly tag_value="$2"
+  local -r tag_key="$1"
+  local -r tag_value="$2"
 
   local mock_instance
   mock_instance=$(aws ec2 run-instances)
@@ -133,11 +133,11 @@ function create_mock_instance_with_tags {
 }
 
 function create_mock_asg {
-  local readonly asg_name="$1"
-  local readonly min_size="$2"
-  local readonly max_size="$3"
-  local readonly azs="$4"
+  local -r asg_name="$1"
+  local -r min_size="$2"
+  local -r max_size="$3"
+  local -r azs="$4"
 
-  aws autoscaling create-launch-configuration --launch-configuration-name "$asg_name"
+  aws autoscaling create-launch-configuration --launch-configuration-name "$asg_name" --image-id ami-fake --instance-type t3.micro
   aws autoscaling create-auto-scaling-group --auto-scaling-group-name "$asg_name" --min-size "$min_size" --max-size "$max_size" --availability-zones "$azs" --launch-configuration-name "$asg_name"
 }

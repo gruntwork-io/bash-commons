@@ -255,25 +255,7 @@ END_HEREDOC
 
   load_aws_mock "$tags" "" ""
 
-  run naws_wrapper_wait_for_instance_tags "i-1234567890abcdef0" "us-east-1" "$max_retries" "$sleep_between_retries"
-
-  assert_failure
-}
-
-@test "aws_wrapper_wait_for_instance_tags no tags" {
-  local reaodnly max_retries=1
-  local readonly sleep_between_retries=0
-  local readonly tags=$(cat <<END_HEREDOC
-{
-   "Tags": []
- }
-END_HEREDOC
-)
-
-  load_aws_mock "$tags" "" ""
-
-  run naws_wrapper_wait_for_instance_tags "i-1234567890abcdef0" "us-east-1" "$max_retries" "$sleep_between_retries"
-
+  run aws_wrapper_wait_for_instance_tags "i-1234567890abcdef0" "us-east-1" "$max_retries" "$sleep_between_retries"
   assert_failure
 }
 

@@ -98,6 +98,17 @@ load "test-helper"
   assert_success
 }
 
+@test "os_create_user with sudo for new_user_sudo user" {
+  local suffix
+  suffix=$(date +%s)
+  local -r username="new_user_sudo$suffix"
+  run os_user_exists "$username"
+  assert_failure
+  run os_create_user "$username" 'true'
+  assert_success
+  run os_user_exists "$username"
+  assert_success
+}
 
 @test "os_change_dir_owner for new_user user" {
   local suffix
@@ -107,6 +118,18 @@ load "test-helper"
   assert_success
   mkdir -p "/tmp/$username"
   os_change_dir_owner "/tmp/$username" "$username"
+  local owner=$(stat -c '%U' "/tmp/$username")
+  assert_equal "$username" "$owner"
+}
+
+@test "os_change_dir_owner with sudo for new_user_sudo user" {
+  local suffix
+  suffix=$(date +%s)
+  local -r username="new_user_sudo$suffix"
+  run os_create_user "$username"
+  assert_success
+  mkdir -p "/tmp/$username"
+  os_change_dir_owner "/tmp/$username" "$username" 'true'
   local owner=$(stat -c '%U' "/tmp/$username")
   assert_equal "$username" "$owner"
 }
