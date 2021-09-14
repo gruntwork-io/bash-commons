@@ -9,12 +9,21 @@
 
 import os
 import logging
+from flask import request
 from flask import Flask
 
 app = Flask(__name__)
 
 META_DATA_ENV_VAR_PREFIX = 'meta_data'
 DYNAMIC_DATA_ENV_VAR_PREFIX = 'dynamic_data'
+
+@app.route("/latest/api/token")
+def token():
+   if request.method == "PUT":
+       # Return a dummy IMDSv2 token
+       return "AWAAAZOnDBwzUdSPGWqQgZ4GLhHnrLIG-P1KLdlJ8Zz6kPbcIRN5lw==", 200
+   else:
+       return '/latest/api/token endpoint only supports PUT method', 405
 
 @app.route("/latest/meta-data/<path:path>")
 def meta_data(path):

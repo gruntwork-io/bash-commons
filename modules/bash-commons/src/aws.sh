@@ -3,22 +3,112 @@
 # (a) it's more convenient to fetch specific info you need, such as an EC2 Instance's private IP and (b) so you can
 # replace these helpers with mocks to do local testing or unit testing.
 #
-# See also: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html for info 
+# See also: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html for info
 # on the metadata endpoint at 169.254.169.254.
+
+# The AWS EC2 Instance Metadata endpoint
+readonly metadata_endpoint="http://169.254.169.254/latest"
+# The AWS EC2 Instance Metadata dynamic endpoint
+readonly metadata_dynamic_endpoint="http://169.254.169.254/latest/dynamic"
+# The AWS EC2 Instance document endpoint
+readonly instance_identity_endpoint="http://169.254.169.254/latest/dynamic/instance-identity/document"
+# A convenience variable representing 3 hours, for use in requesting a token from the IMDSv2 endpoint
+readonly three_hours_in_s=10800
+# By default, we use Instance Metadata service version 2, which has been specially hardened against several attack vectors
+default_instance_metadata_version="2"
 
 # shellcheck source=./modules/bash-commons/src/assert.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
 # shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 
-# Look up the given path in the EC2 Instance metadata endpoint
+# If you must use Instance Metadata service version 1, you can do so by setting the environment variable:
+# export GRUNTWORK_BASH_COMMONS_IMDSV="1"
+function aws_get_instance_metadata_version_in_use {
+  using=${GRUNTWORK_BASH_COMMONS_IMDSV:-$default_instance_metadata_version}
+  assert_value_in_list "Instance Metadata service version in use" "$using" "1" "2"
+  echo "$using"
+}
+
+# This function calls the Instance Metadata Service endpoint version 2 (IMDSv2) which is hardened against certain attack vectors.
+# The endpoint returns a token that must be supplied on subsequent requests. This implementation fetches a new token
+# for each transaction. See:
+# https://aws.amazon.com/blogs/security/defense-in-depth-open-firewalls-reverse-proxies-ssrf-vulnerabilities-ec2-instance-metadata-service/
+# for more information
+function ec2_metadata_http_get {
+  assert_not_empty "path" "$1"
+  local -r path="$1"
+  token=$(ec2_metadata_http_put $three_hours_in_s)
+  curl "$metadata_endpoint/meta-data/$path" -H "X-aws-ec2-metadata-token: $token" \
+    --silent --location --fail --show-error
+}
+
+function ec2_metadata_dynamic_http_get {
+  assert_not_empty "path" "$1"
+  local -r path="$1"
+  token=$(ec2_metadata_http_put $three_hours_in_s)
+  curl "$metadata_dynamic_endpoint/$path" -H "X-aws-ec2-metadata-token: $token" \
+    --silent --location --fail --show-error
+}
+
+function ec2_metadata_http_put {
+  # We allow callers to configure the ttl - if not provided it will default to 6 hours
+  local ttl="$1"
+  if [[ -z "$1" ]]; then
+    ttl=21600
+  elif [[ "$1" -gt 21600 ]]; then
+    ttl=21600
+  fi
+  token=$(curl --silent --location --fail --show-error -X PUT "$metadata_endpoint/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: $ttl")
+  echo "$token"
+}
+
+function ec2_instance_identity_field_get {
+  local -r field="$1"
+  token=$(ec2_metadata_http_put $three_hours_in_s)
+  curl "$instance_identity_endpoint" -H "X-aws-ec2-metadata-token: $token" \
+    --silent --location --fail --show-error | jq -r ".${field}"
+}
+
 function aws_lookup_path_in_instance_metadata {
+  local -r path="$1"
+    version_in_use=$(aws_get_instance_metadata_version_in_use)
+  if [[ "$version_in_use" -eq 1 ]]; then
+    aws_lookup_path_in_instance_metadata_v1 "$path"
+  elif [[ "$version_in_use" -eq 2 ]]; then
+    aws_lookup_path_in_instance_metadata_v2 "$path"
+  fi
+}
+
+function aws_lookup_path_in_instance_metadata_v2 {
+ assert_not_empty "path" "$path" "Must specify a metadata path to request"
+ ec2_metadata_dynamic_http_get "$path"
+}
+
+# Look up the given path in the EC2 Instance metadata endpoint using IMDSv1
+function aws_lookup_path_in_instance_metadata_v1 {
   local -r path="$1"
   curl --silent --show-error --location "http://169.254.169.254/latest/meta-data/$path/"
 }
 
-# Look up the given path in the EC2 Instance dynamic metadata endpoint
 function aws_lookup_path_in_instance_dynamic_data {
+ local -r path="$1"
+ version_in_use=$(aws_get_instance_metadata_version_in_use)
+ if [[ "$version_in_use" -eq 1 ]]; then
+   aws_lookup_path_in_instance_dynamic_data_v1 "$path"
+ elif [[ "$version_in_use" -eq 2 ]]; then
+   aws_lookup_path_in_instance_dynamic_data_v2 "$path"
+ fi
+}
+
+function aws_lookup_path_in_instance_dynamic_data_v2 {
+ local -r path="$1"
+ assert_not_empty "path" "$path" "Must specify a metadata dynamic path to request"
+ ec2_metadata_dynamic
+}
+
+# Look up the given path in the EC2 Instance dynamic metadata endpoint using IMDSv1
+function aws_lookup_path_in_instance_dynamic_data_v1 {
   local -r path="$1"
   curl --silent --show-error --location "http://169.254.169.254/latest/dynamic/$path/"
 }
