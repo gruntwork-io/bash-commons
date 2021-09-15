@@ -82,7 +82,7 @@ function aws_lookup_path_in_instance_metadata {
 
 function aws_lookup_path_in_instance_metadata_v2 {
  assert_not_empty "path" "$path" "Must specify a metadata path to request"
- ec2_metadata_dynamic_http_get "$path"
+ ec2_metadata_http_get "$path"
 }
 
 # Look up the given path in the EC2 Instance metadata endpoint using IMDSv1
@@ -104,7 +104,7 @@ function aws_lookup_path_in_instance_dynamic_data {
 function aws_lookup_path_in_instance_dynamic_data_v2 {
  local -r path="$1"
  assert_not_empty "path" "$path" "Must specify a metadata dynamic path to request"
- ec2_metadata_dynamic
+ ec2_metadata_dynamic_http_get "$path"
 }
 
 # Look up the given path in the EC2 Instance dynamic metadata endpoint using IMDSv1
