@@ -25,6 +25,84 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
 # shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 
+# AWS and Gruntwork recommend use of the Instance Metadata Service version 2 whenever possible. Although
+# IMDSv1 is still supported and considered fully secure by AWS, IMDSv2 features special hardening against
+# specific threat vectors. Read more at:
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
+#
+# If you must use Instance Metadata service version 1, you can do so by setting the environment variable:
+# export GRUNTWORK_BASH_COMMONS_IMDSV="1"
+function aws_get_instance_metadata_version_in_use {
+  using=${GRUNTWORK_BASH_COMMONS_IMDS_VERSION:-$default_instance_metadata_version}
+  assert_value_in_list "Instance Metadata service version in use" "$using" "1" "2"
+  echo "$using"
+}
+
+##################################################################################
+# Shim functions to support both IMDSv1 and IMDSv2 simultaneously
+##################################################################################
+# The following functions aim to support backward compatibility with IMDSv1 by
+# maintaining the arity of all previous function calls, but using $default_instance_metadata_version
+# to determine which implementation's code path to follow
+
+# This function has been modified to simultaneously support Instance Metadata service versions 1 and 2
+# This is due to the fact that we will need to operate in a split-brain mode while all our dependent
+# modules are being updated to use IMDSv2.
+#
+# Version 2 is now the default used by this library, but the  version to use can be overridden by setting
+# env var GRUNTWORK_BASH_COMMONS_IMDSV=1
+function aws_lookup_path_in_instance_metadata {
+  local -r path="$1"
+    version_in_use=$(aws_get_instance_metadata_version_in_use)
+  if [[ "$version_in_use" -eq 1 ]]; then
+    aws_lookup_path_in_instance_metadata_v1 "$path"
+  elif [[ "$version_in_use" -eq 2 ]]; then
+    aws_lookup_path_in_instance_metadata_v2 "$path"
+  fi
+}
+
+# This function has been modified to simultaneously support Instance Metadata service versions 1 and 2
+# This is due to the fact that we will need to operate in a split-brain mode while all our dependent
+# modules are being updated to use IMDSv2.
+#
+# Version 2 is now the default used by this library, but the version to use can be overridden by setting
+# env var GRUNTWORK_BASH_COMMONS_IMDSV=1
+function aws_lookup_path_in_instance_dynamic_data {
+ local -r path="$1"
+ version_in_use=$(aws_get_instance_metadata_version_in_use)
+ if [[ "$version_in_use" -eq 1 ]]; then
+   aws_lookup_path_in_instance_dynamic_data_v1 "$path"
+ elif [[ "$version_in_use" -eq 2 ]]; then
+   aws_lookup_path_in_instance_dynamic_data_v2 "$path"
+ fi
+}
+
+##################################################################################
+# Instance Metadata Service Version 1 implementation functions
+##################################################################################
+# The following functions implement calls to Instance Metadata Service version 1,
+# meaning that they do not retrieve or present the tokens returned and expected by
+# IMDSv2
+
+# This function uses Instance Metadata service version 1. It requests the supplied path from the endpoint, but
+# does not use the token-based authorization scheme.
+function aws_lookup_path_in_instance_metadata_v1 {
+  local -r path="$1"
+  curl --silent --show-error --location "http://169.254.169.254/latest/meta-data/$path/"
+}
+
+# Look up the given path in the EC2 Instance dynamic metadata endpoint using IMDSv1
+function aws_lookup_path_in_instance_dynamic_data_v1 {
+  local -r path="$1"
+  curl --silent --show-error --location "http://169.254.169.254/latest/dynamic/$path/"
+}
+
+##################################################################################
+# Instance Metadata Service Version 2 Functions
+##################################################################################
+# The following functions use IMDSv2, meaning they request and present IMDSv2 tokens
+# when making requests to IMDS.
+
 # Convenience function for setting a TTL, and falling back to sensible defaults
 # when the value is either not supplied or out of bounds
 function configure_imdsv2_ttl {
@@ -35,14 +113,6 @@ function configure_imdsv2_ttl {
    ttl="$six_hours_in_s"
  fi
  echo "$ttl"
-}
-
-# If you must use Instance Metadata service version 1, you can do so by setting the environment variable:
-# export GRUNTWORK_BASH_COMMONS_IMDSV="1"
-function aws_get_instance_metadata_version_in_use {
-  using=${GRUNTWORK_BASH_COMMONS_IMDS_VERSION:-$default_instance_metadata_version}
-  assert_value_in_list "Instance Metadata service version in use" "$using" "1" "2"
-  echo "$using"
 }
 
 # This function calls the Instance Metadata Service endpoint version 2 (IMDSv2) which is hardened against certain attack vectors.
@@ -74,9 +144,11 @@ function ec2_metadata_dynamic_http_get {
     --silent --location --fail --show-error
 }
 
-# This function uses Instance Metadata service version 2. It accepts a configurable TTL for the
-# IMDSv2 token it requests, and it returns the token to the caller. If a TTL is not supplied, this
-# function will default to the maximum IMDSv2 session duration which is 6 hours.
+# This function uses Instance Metadata Service version 2. It retrieves a token from the IMDSv2
+# endpoint, which can be presented during subequent requests to the IMDSv2 endpoints.
+
+# This function accepts a conifgurable TTL for the IMDSv2 token it requests. If a TTL is not supplied,
+# this function will default to the maximum IMDSv2 session duration which is 6 hours.
 function ec2_metadata_http_put {
   # We allow callers to configure the ttl - if not provided it will default to 6 hours
   local ttl=""
@@ -85,25 +157,20 @@ function ec2_metadata_http_put {
   echo "$token"
 }
 
+# This function uses Instance Metadata Service version 2. It retrieves the field of the supplied name
+# from the Instance Metadata Service's identity document for the given EC2 instance and returns
+# its value.
+#
+# This function accepts a configurable TTL for the IMDSv2 token it requests, and it returns
+# the token to the caller. If a TTL is not supplied, this function will default to the
+# maximum IMDSv2 session duration which is 6 hours.
 function ec2_instance_identity_field_get {
   local -r field="$1"
-  token=$(ec2_metadata_http_put $three_hours_in_s)
+  local ttl=""
+  ttl=$(conifgure_imdsv2_ttl "$2")
+  token=$(ec2_metadata_http_put "$ttl")
   curl "$instance_identity_endpoint" -H "X-aws-ec2-metadata-token: $token" \
     --silent --location --fail --show-error | jq -r ".${field}"
-}
-
-# This function has been modified to simultaneously support Instance Metadata service versions 1 and 2
-# This is due to the fact that we will need to operate in a split-brain mode while all our dependent
-# modules are being updated to use IMDSv2. Version 2 is now the default used by this library, but the
-# version to use can be overridden by setting env var GRUNTWORK_BASH_COMMONS_IMDSV=1
-function aws_lookup_path_in_instance_metadata {
-  local -r path="$1"
-    version_in_use=$(aws_get_instance_metadata_version_in_use)
-  if [[ "$version_in_use" -eq 1 ]]; then
-    aws_lookup_path_in_instance_metadata_v1 "$path"
-  elif [[ "$version_in_use" -eq 2 ]]; then
-    aws_lookup_path_in_instance_metadata_v2 "$path"
-  fi
 }
 
 # This function uses Instance Metadata version 2.It requests the supplied path from the endpoint, leveraging
@@ -113,38 +180,16 @@ function aws_lookup_path_in_instance_metadata_v2 {
  ec2_metadata_http_get "$path"
 }
 
-# This function uses Instance Metadata service version 1. It requests the supplied path from the endpoint, but
-# does not use the token-based authorization scheme.
-function aws_lookup_path_in_instance_metadata_v1 {
-  local -r path="$1"
-  curl --silent --show-error --location "http://169.254.169.254/latest/meta-data/$path/"
-}
-
-# This function has been modified to simultaneously support Instance Metadata service versions 1 and 2
-# This is due to the fact that we will need to operate in a split-brain mode while all our dependent
-# modules are being updated to use IMDSv2. Version 2 is now the default used by this library, but the
-# version to use can be overridden by setting env var GRUNTWORK_BASH_COMMONS_IMDSV=1
-function aws_lookup_path_in_instance_dynamic_data {
- local -r path="$1"
- version_in_use=$(aws_get_instance_metadata_version_in_use)
- if [[ "$version_in_use" -eq 1 ]]; then
-   aws_lookup_path_in_instance_dynamic_data_v1 "$path"
- elif [[ "$version_in_use" -eq 2 ]]; then
-   aws_lookup_path_in_instance_dynamic_data_v2 "$path"
- fi
-}
-
+# This function uses Instance Metadata version 2. It requests the specified path from the IMDS dynamic endpont
 function aws_lookup_path_in_instance_dynamic_data_v2 {
  local -r path="$1"
  assert_not_empty "path" "$path" "Must specify a metadata dynamic path to request"
  ec2_metadata_dynamic_http_get "$path"
 }
 
-# Look up the given path in the EC2 Instance dynamic metadata endpoint using IMDSv1
-function aws_lookup_path_in_instance_dynamic_data_v1 {
-  local -r path="$1"
-  curl --silent --show-error --location "http://169.254.169.254/latest/dynamic/$path/"
-}
+##################################################################################
+# Miscellaneous AWS CLI functions
+##################################################################################
 
 # Get the private IP address for this EC2 Instance
 function aws_get_instance_private_ip {
@@ -180,6 +225,14 @@ function aws_get_instance_region {
 function aws_get_ec2_instance_availability_zone {
   aws_lookup_path_in_instance_metadata "placement/availability-zone"
 }
+
+##################################################################################
+# Miscellaneous AWS CLI functions
+##################################################################################
+# The following functions leverage the AWS CLI, so their use of the Instance Metadata Service
+# is governed by the version of the AWS CLI that is installed on a given system.
+# Note that AWS CLI v2+ uses IMDSv2. Learn more at:
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
 
 # Get the tags for the given instance and region. Returns JSON from the AWS CLI's describe-tags command.
 function aws_get_instance_tags {
