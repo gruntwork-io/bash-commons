@@ -14,6 +14,9 @@ readonly metadata_dynamic_endpoint="http://169.254.169.254/latest/dynamic"
 readonly instance_identity_endpoint="http://169.254.169.254/latest/dynamic/instance-identity/document"
 # A convenience variable representing 3 hours, for use in requesting a token from the IMDSv2 endpoint
 readonly three_hours_in_s=10800
+# A convenience variable representing 6 hours, which is the maximum configurable session duration when requesting
+# a token from IMDSv2
+readonly six_hours_in_s=21600
 # By default, we use Instance Metadata service version 2, which has been specially hardened against several attack vectors
 default_instance_metadata_version="2"
 
@@ -21,6 +24,16 @@ default_instance_metadata_version="2"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
 # shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
+
+function configure_imdsv2_ttl {
+ local ttl="$1"
+ if [[ -z "$1" ]]; then
+   ttl="$six_hours_in_s"
+ elif (( "$1" > "$six_hours_in_s" )); then
+   ttl="$six_hours_in_s"
+ fi
+ echo "$ttl"
+}
 
 # If you must use Instance Metadata service version 1, you can do so by setting the environment variable:
 # export GRUNTWORK_BASH_COMMONS_IMDSV="1"
@@ -38,27 +51,34 @@ function aws_get_instance_metadata_version_in_use {
 function ec2_metadata_http_get {
   assert_not_empty "path" "$1"
   local -r path="$1"
-  token=$(ec2_metadata_http_put $three_hours_in_s)
+  # We allow callers to configure the ttl - if not provided it will default to 6 hours
+  local ttl=""
+  ttl=$(configure_imdsv2_ttl "$2")
+  token=$(ec2_metadata_http_put "$ttl")
   curl "$metadata_endpoint/meta-data/$path" -H "X-aws-ec2-metadata-token: $token" \
     --silent --location --fail --show-error
 }
 
+# This function uses Instance Metadata service version 2. It requests the supplied path from the
+# dynamic endpoint.
 function ec2_metadata_dynamic_http_get {
   assert_not_empty "path" "$1"
   local -r path="$1"
+  # We allow callers to configure the ttl - if not provided it will default to 6 hours
+  local ttl=""
+  ttl=$(configure_imdsv2_ttl "$2")
   token=$(ec2_metadata_http_put $three_hours_in_s)
   curl "$metadata_dynamic_endpoint/$path" -H "X-aws-ec2-metadata-token: $token" \
     --silent --location --fail --show-error
 }
 
+# This function uses Instance Metadata service version 2. It accepts a configurable TTL for the
+# IMDSv2 token it requests, and it returns the token to the caller. If a TTL is not supplied, this
+# function will default to the maximum IMDSv2 session duration which is 6 hours.
 function ec2_metadata_http_put {
   # We allow callers to configure the ttl - if not provided it will default to 6 hours
-  local ttl="$1"
-  if [[ -z "$1" ]]; then
-    ttl=21600
-  elif [[ "$1" -gt 21600 ]]; then
-    ttl=21600
-  fi
+  local ttl=""
+  ttl=$(configure_imdsv2_ttl "$2")
   token=$(curl --silent --location --fail --show-error -X PUT "$metadata_endpoint/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: $ttl")
   echo "$token"
 }
@@ -70,6 +90,10 @@ function ec2_instance_identity_field_get {
     --silent --location --fail --show-error | jq -r ".${field}"
 }
 
+# This function has been modified to simultaneously support Instance Metadata service versions 1 and 2
+# This is due to the fact that we will need to operate in a split-brain mode while all our dependent
+# modules are being updated to use IMDSv2. Version 2 is now the default used by this library, but the
+# version to use can be overridden by setting env var GRUNTWORK_BASH_COMMONS_IMDSV=1
 function aws_lookup_path_in_instance_metadata {
   local -r path="$1"
     version_in_use=$(aws_get_instance_metadata_version_in_use)
@@ -80,17 +104,24 @@ function aws_lookup_path_in_instance_metadata {
   fi
 }
 
+# This function uses Instance Metadata version 2.It requests the supplied path from the endpoint, leveraging
+# the token-based authorization scheme.
 function aws_lookup_path_in_instance_metadata_v2 {
  assert_not_empty "path" "$path" "Must specify a metadata path to request"
  ec2_metadata_http_get "$path"
 }
 
-# Look up the given path in the EC2 Instance metadata endpoint using IMDSv1
+# This function uses Instance Metadata service version 1. It requests the supplied path from the endpoint, but
+# does not use the token-based authorization scheme.
 function aws_lookup_path_in_instance_metadata_v1 {
   local -r path="$1"
   curl --silent --show-error --location "http://169.254.169.254/latest/meta-data/$path/"
 }
 
+# This function has been modified to simultaneously support Instance Metadata service versions 1 and 2
+# This is due to the fact that we will need to operate in a split-brain mode while all our dependent
+# modules are being updated to use IMDSv2. Version 2 is now the default used by this library, but the
+# version to use can be overridden by setting env var GRUNTWORK_BASH_COMMONS_IMDSV=1
 function aws_lookup_path_in_instance_dynamic_data {
  local -r path="$1"
  version_in_use=$(aws_get_instance_metadata_version_in_use)
