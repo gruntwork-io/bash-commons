@@ -25,6 +25,8 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
 # shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 
+# Convenience function for setting a TTL, and falling back to sensible defaults
+# when the value is either not supplied or out of bounds
 function configure_imdsv2_ttl {
  local ttl="$1"
  if [[ -z "$1" ]]; then
@@ -38,7 +40,7 @@ function configure_imdsv2_ttl {
 # If you must use Instance Metadata service version 1, you can do so by setting the environment variable:
 # export GRUNTWORK_BASH_COMMONS_IMDSV="1"
 function aws_get_instance_metadata_version_in_use {
-  using=${GRUNTWORK_BASH_COMMONS_IMDSV:-$default_instance_metadata_version}
+  using=${GRUNTWORK_BASH_COMMONS_IMDS_VERSION:-$default_instance_metadata_version}
   assert_value_in_list "Instance Metadata service version in use" "$using" "1" "2"
   echo "$using"
 }
