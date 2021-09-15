@@ -98,22 +98,10 @@ function aws_lookup_path_in_instance_dynamic_data_v1 {
 }
 
 ##################################################################################
-# Instance Metadata Service Version 2 Functions
+# Instance Metadata Service Version 2 functions
 ##################################################################################
-# The following functions use IMDSv2, meaning they request and present IMDSv2 tokens
-# when making requests to IMDS.
-
-# Convenience function for setting a TTL, and falling back to sensible defaults
-# when the value is either not supplied or out of bounds
-function configure_imdsv2_ttl {
- local ttl="$1"
- if [[ -z "$1" ]]; then
-   ttl="$six_hours_in_s"
- elif (( "$1" > "$six_hours_in_s" )); then
-   ttl="$six_hours_in_s"
- fi
- echo "$ttl"
-}
+# The following functions use IMDSv2, meaning they request and present IMDSv2
+# tokens when making requests to IMDS.
 
 # This function calls the Instance Metadata Service endpoint version 2 (IMDSv2) which is hardened against certain attack vectors.
 # The endpoint returns a token that must be supplied on subsequent requests. This implementation fetches a new token
@@ -161,16 +149,28 @@ function ec2_metadata_http_put {
 # from the Instance Metadata Service's identity document for the given EC2 instance and returns
 # its value.
 #
-# This function accepts a configurable TTL for the IMDSv2 token it requests, and it returns
-# the token to the caller. If a TTL is not supplied, this function will default to the
-# maximum IMDSv2 session duration which is 6 hours.
+# This function uses Instance Metadata Service version 2. It accepts a configurable TTL
+# for the IMDSv2 token it requests, and it returns the token to the caller. If a TTL
+# is not supplied, this function will default to the maximum IMDSv2 session duration which is 6 hours.
 function ec2_instance_identity_field_get {
   local -r field="$1"
   local ttl=""
-  ttl=$(conifgure_imdsv2_ttl "$2")
+  ttl=$(configure_imdsv2_ttl "$2")
   token=$(ec2_metadata_http_put "$ttl")
   curl "$instance_identity_endpoint" -H "X-aws-ec2-metadata-token: $token" \
     --silent --location --fail --show-error | jq -r ".${field}"
+}
+
+# This is a convenience function for setting a TTL, and falling back to sensible defaults
+# when the value is either not supplied or out of bounds.
+function configure_imdsv2_ttl {
+ local ttl="$1"
+ if [[ -z "$1" ]]; then
+   ttl="$six_hours_in_s"
+ elif (( "$1" > "$six_hours_in_s" )); then
+   ttl="$six_hours_in_s"
+ fi
+ echo "$ttl"
 }
 
 # This function uses Instance Metadata version 2.It requests the supplied path from the endpoint, leveraging
@@ -188,8 +188,14 @@ function aws_lookup_path_in_instance_dynamic_data_v2 {
 }
 
 ##################################################################################
-# Miscellaneous AWS CLI functions
+# IMDS convenience functions
 ##################################################################################
+# The following functions will use either IMDSv1 or IMDSv2, depending on the value
+# of $default_instance_metadata_version, which defaults to 2 but can be overridden
+# by setting the environment variable:
+# export GRUNTWORK_BASH_COMMONS_IMDS_VERSION=1
+# This is because these functions call out to the shim functions that determine which
+# underlying implementation (IMDSv1 or IMDSv2) to use
 
 # Get the private IP address for this EC2 Instance
 function aws_get_instance_private_ip {
