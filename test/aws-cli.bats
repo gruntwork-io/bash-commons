@@ -186,6 +186,5 @@ END_HEREDOC
   local -r ttl_value=310000
   returned_ttl=$(configure_imdsv2_ttl "$ttl_value")
   assert_success
-
-  assert_equal "21600" "$returned_ttl"
+  assert_equal "$returned_ttl" "21600"
 }

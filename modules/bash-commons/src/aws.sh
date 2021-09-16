@@ -168,7 +168,8 @@ function configure_imdsv2_ttl {
  if [[ -z "$1" ]]; then
    ttl="$six_hours_in_s"
  elif (( "$1" > "$six_hours_in_s" )); then
-   ttl="$six_hours_in_s"
+   log_error "IMDSv2 token ttl maximum is 21600 seconds / 6 hours. Falling back to max session duration of 6 hours."
+   ttl=21600
  fi
  echo "$ttl"
 }
