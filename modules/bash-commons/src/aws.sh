@@ -127,7 +127,7 @@ function ec2_metadata_dynamic_http_get {
   # We allow callers to configure the ttl - if not provided it will default to 6 hours
   local ttl=""
   ttl=$(configure_imdsv2_ttl "$2")
-  token=$(ec2_metadata_http_put $three_hours_in_s)
+  token=$(ec2_metadata_http_put "$three_hours_in_s")
   curl "$metadata_dynamic_endpoint/$path" -H "X-aws-ec2-metadata-token: $token" \
     --silent --location --fail --show-error
 }
