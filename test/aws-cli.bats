@@ -165,3 +165,27 @@ END_HEREDOC
   num_instances=$(echo "$output" | jq -r '.Reservations | length')
   assert_greater_than "$num_instances" 0
 }
+
+@test "configure_imdsv2_ttl_with_minimal_ttl" {
+  local -r ttl_value=1
+  returned_ttl=$(configure_imdsv2_ttl "$ttl_value")
+  assert_success
+
+  assert_equal "$ttl_value" "$returned_ttl"
+}
+
+@test "configure_imdsv2_ttl_with_maximum_ttl" {
+  local -r ttl_value=21600
+  returned_ttl=$(configure_imdsv2_ttl "$ttl_value")
+  assert_success
+
+  assert_equal "$ttl_value" "$returned_ttl"
+}
+
+@test "configure_imdsv2_ttl_with_excessively_high_ttl" {
+  local -r ttl_value=310000
+  returned_ttl=$(configure_imdsv2_ttl "$ttl_value")
+  assert_success
+
+  assert_equal "21600" "$returned_ttl"
+}
