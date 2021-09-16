@@ -53,7 +53,7 @@ function aws_get_instance_metadata_version_in_use {
 # env var GRUNTWORK_BASH_COMMONS_IMDSV=1
 function aws_lookup_path_in_instance_metadata {
   local -r path="$1"
-    version_in_use=$(aws_get_instance_metadata_version_in_use)
+  version_in_use=$(aws_get_instance_metadata_version_in_use)
   if [[ "$version_in_use" -eq 1 ]]; then
     aws_lookup_path_in_instance_metadata_v1 "$path"
   elif [[ "$version_in_use" -eq 2 ]]; then
