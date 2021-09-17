@@ -416,3 +416,10 @@ function aws_describe_instances_in_asg {
 
   aws ec2 describe-instances --region "$aws_region" --filters "Name=tag:aws:autoscaling:groupName,Values=$asg_name" "Name=instance-state-name,Values=pending,running"
 }
+
+# Assert that we're currently running on an EC2 instance
+function assert_is_ec2_instance {
+  local token
+  token=$(ec2_metadata_http_put 1)
+  [[ -n "$token" ]]
+}
