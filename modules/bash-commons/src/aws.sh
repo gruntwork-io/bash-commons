@@ -192,9 +192,9 @@ function aws_lookup_path_in_instance_dynamic_data_v2 {
 # IMDS convenience functions
 ##################################################################################
 # The following functions will use either IMDSv1 or IMDSv2, depending on the value
-# of $default_instance_metadata_version, which defaults to 2 but can be overridden
+# of $default_instance_metadata_version, which defaults to 1 but can be overridden
 # by setting the environment variable:
-# export GRUNTWORK_BASH_COMMONS_IMDS_VERSION=1
+# export GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
 # This is because these functions call out to the shim functions that determine which
 # underlying implementation (IMDSv1 or IMDSv2) to use
 
