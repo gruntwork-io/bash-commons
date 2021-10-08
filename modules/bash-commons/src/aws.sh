@@ -30,8 +30,8 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 # specific threat vectors. Read more at:
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
 #
-# If you must use Instance Metadata service version 1, you can do so by setting the environment variable:
-# export GRUNTWORK_BASH_COMMONS_IMDSV="1"
+# If you prefer to use Instance Metadata service version 2, you can do so by setting the environment variable:
+# export GRUNTWORK_BASH_COMMONS_IMDSV="2"
 function aws_get_instance_metadata_version_in_use {
   using=${GRUNTWORK_BASH_COMMONS_IMDS_VERSION:-$default_instance_metadata_version}
   assert_value_in_list "Instance Metadata service version in use" "$using" "1" "2"
