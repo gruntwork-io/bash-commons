@@ -19,9 +19,7 @@ services:
     command: bats test
     # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
     privileged: true
-    environment:
-      # Signal to bash-commons module to use Instance Metadata Service version 1
-      - GRUNTWORK_BASH_COMMONS_IMDS_VERSION=1
+    # We intentionally omit the GRUNTWORK_BASH_COMMONS_IMDS_VERSION env var here to ensure the default behavior works as expected
   bats_ubuntu1604_imds_v2:
     build:
       context: ./
@@ -47,9 +45,7 @@ services:
     command: bats test
     # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
     privileged: true
-    environment:
-      # Signal to bash-commons module to use Instance Metadata Service version 1
-      - GRUNTWORK_BASH_COMMONS_IMDS_VERSION=1
+    # We intentionally omit the GRUNTWORK_BASH_COMMONS_IMDS_VERSION env var here to ensure the default behavior works as intended
   bats_ubuntu1804_imds_v2:
     build:
       context: ./
