@@ -71,6 +71,17 @@ cp -r bash-commons/modules/bash-commons/src /opt/gruntwork/bash-commons
 sudo chown -R "my-os-username:my-os-group" /opt/gruntwork/bash-commons
 ```
 
+## Instance Metadata Service versions
+
+`bash-commons` supports both Instance Metadata Service (IMDS) version 1 and 2. Gruntwork and AWS both recommend using version 2 of the Instance Metadata Service whenever possible. Although version 1 is still supported and considered fully secure by AWS, version 2 has been specially hardened against specific threat vectors and is therefore preferable.
+
+To understand more about Instance Metadata Service version 2 and its features, read [the official AWS documentation on IMDSv2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html).
+
+There are two ways to specify the version of the Instance Metadata Service that `bash-commons` should use:
+
+1. Set the environment variable `GRUNTWORK_BASH_COMMONS_IMDS_VERSION` to the version of IMDS that you wish to use. Valid values are either `1` or `2`.
+2. Change the value of `default_instance_metadata_version` to either `1` or `2`.
+
 #### Example of `dynamic-ubuntu-wait.sh` usage:
 
 You can use the `dynamic-ubuntu-wait.sh` command after you [install bash-commons](#install):

@@ -9,12 +9,17 @@
 
 import os
 import logging
+from flask import request
 from flask import Flask
 
 app = Flask(__name__)
 
 META_DATA_ENV_VAR_PREFIX = 'meta_data'
 DYNAMIC_DATA_ENV_VAR_PREFIX = 'dynamic_data'
+
+@app.route("/latest/api/token", methods=['PUT'])
+def token():
+   return "AWAAAZOnDBwzUdSPGWqQgZ4GLhHnrLIG-P1KLdlJ8Zz6kPbcIRN5lw==", 200
 
 @app.route("/latest/meta-data/<path:path>")
 def meta_data(path):
