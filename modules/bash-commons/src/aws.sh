@@ -65,8 +65,8 @@ function aws_lookup_path_in_instance_metadata {
 # This is due to the fact that we will need to operate in a split-brain mode while all our dependent
 # modules are being updated to use IMDSv2.
 #
-# Version 2 is now the default used by this library, but the version to use can be overridden by setting
-# env var GRUNTWORK_BASH_COMMONS_IMDSV=1
+# Version 1 is the default, but can be overridden by setting:
+# env var GRUNTWORK_BASH_COMMONS_IMDSV=2
 function aws_lookup_path_in_instance_dynamic_data {
  local -r path="$1"
  version_in_use=$(aws_get_instance_metadata_version_in_use)
