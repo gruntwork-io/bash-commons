@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 
+# Echo to stderr. Useful for printing script usage information.
+function echo_stderr {
+  >&2 echo "$@"
+}
+
 # Log the given message at the given level. All logs are written to stderr with a timestamp.
 function log {
   local -r level="$1"
   local -r message="$2"
   local -r timestamp=$(date +"%Y-%m-%d %H:%M:%S")
   local -r script_name="$(basename "$0")"
-  >&2 echo -e "${timestamp} [${level}] [$script_name] ${message}"
+  echo_stderr -e "${timestamp} [${level}] [$script_name] ${message}"
 }
 
 # Log the given message at INFO level. All logs are written to stderr with a timestamp.
