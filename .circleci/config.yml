@@ -1,7 +1,9 @@
 version: 2
 jobs:
   shellcheck:
-    machine: true
+    machine:
+      enabled: true
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run: docker-compose up --exit-code-from shellcheck shellcheck
@@ -26,14 +28,18 @@ jobs:
   bats_ubuntu1604_imds_v1:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
-    machine: true
+    machine:
+      enabled: true
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run: docker-compose up --exit-code-from bats_ubuntu1604_imds_v1 bats_ubuntu1604_imds_v1
   bats_ubuntu1604_imds_v2:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
-    machine: true
+    machine:
+      enabled: true
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run: docker-compose up --exit-code-from bats_ubuntu1604_imds_v2 bats_ubuntu1604_imds_v2
@@ -41,28 +47,36 @@ jobs:
   bats_ubuntu1804_imds_v1:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
-    machine: true
+    machine:
+      enabled: true
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run: docker-compose up --exit-code-from bats_ubuntu1804_imds_v1 bats_ubuntu1804_imds_v1
   bats_ubuntu1804_imds_v2:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
-    machine: true
+    machine:
+      enabled: true
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run: docker-compose up --exit-code-from bats_ubuntu1804_imds_v2 bats_ubuntu1804_imds_v2
   bats_ubuntu2004_imds_v1:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
-    machine: true
+    machine:
+      enabled: true
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run: docker-compose up --exit-code-from bats_ubuntu2004_imds_v1 bats_ubuntu2004_imds_v1
   bats_ubuntu2004_imds_v2:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
-    machine: true
+    machine:
+      enabled: true
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run: docker-compose up --exit-code-from bats_ubuntu2004_imds_v2 bats_ubuntu2004_imds_v2
