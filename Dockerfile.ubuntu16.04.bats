@@ -21,7 +21,7 @@ RUN pip install -U pip
 RUN pip install awscli --upgrade --user
 
 # Install moto: https://github.com/spulec/moto
-RUN pip install flask moto moto[server] networkx==2.2
+RUN pip install flask moto moto[server] networkx==2.2 aws-xray-sdk-2.8.0 aws-sam-translator-1.40.0
 
 # Install tools we'll need to create a mock EC2 metadata server
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y net-tools iptables
