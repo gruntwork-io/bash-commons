@@ -22,6 +22,13 @@ function os_is_ubuntu {
   grep -q "Ubuntu $version" /etc/*release
 }
 
+# Returns true (0) if this is an Debian server at the given version or false (1) otherwise. The version number
+# can use regex. If you don't care about the version, leave it unspecified.
+function os_is_debian {
+  local -r version="$1"
+  grep -q "Debian GNU/Linux $version" /etc/*release
+}
+
 # Returns true (0) if this is a CentOS server at the given version or false (1) otherwise. The version number
 # can use regex. If you don't care about the version, leave it unspecified.
 function os_is_centos {
