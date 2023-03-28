@@ -74,7 +74,8 @@ workflows:
       - shellcheck
       - integration_test:
           context:
-            - Gruntwork Admin
+            - AWS__PHXDEVOPS__circle-ci-test
+            - GITHUB__PAT__gruntwork-ci
       - bats_ubuntu1604_imds_v1
       - bats_ubuntu1604_imds_v2
       - bats_ubuntu1804_imds_v1
