@@ -31,7 +31,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
 #
 # If you prefer to use Instance Metadata service version 2, you can do so by setting the environment variable:
-# export GRUNTWORK_BASH_COMMONS_IMDSV="2"
+# export GRUNTWORK_BASH_COMMONS_IMDS_VERSION="2"
 function aws_get_instance_metadata_version_in_use {
   using=${GRUNTWORK_BASH_COMMONS_IMDS_VERSION:-$default_instance_metadata_version}
   assert_value_in_list "Instance Metadata service version in use" "$using" "1" "2"
@@ -50,7 +50,7 @@ function aws_get_instance_metadata_version_in_use {
 # modules are being updated to use IMDSv2.
 #
 # Version 1 is the default, but can be overridden by setting:
-# env var GRUNTWORK_BASH_COMMONS_IMDSV=2
+# env var GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
 function aws_lookup_path_in_instance_metadata {
   local -r path="$1"
   version_in_use=$(aws_get_instance_metadata_version_in_use)
@@ -66,7 +66,7 @@ function aws_lookup_path_in_instance_metadata {
 # modules are being updated to use IMDSv2.
 #
 # Version 1 is the default, but can be overridden by setting:
-# env var GRUNTWORK_BASH_COMMONS_IMDSV=2
+# env var GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
 function aws_lookup_path_in_instance_dynamic_data {
  local -r path="$1"
  version_in_use=$(aws_get_instance_metadata_version_in_use)
