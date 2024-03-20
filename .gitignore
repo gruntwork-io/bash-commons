@@ -14,3 +14,7 @@ out/
 
 # Python
 *.pyc
+
+# Nix
+result
+result/**
