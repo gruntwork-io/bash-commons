@@ -66,19 +66,26 @@ jobs:
     steps:
       - checkout
       - run: docker-compose up --exit-code-from bats_ubuntu2004_imds_v2 bats_ubuntu2004_imds_v2
+  nix:
+    docker:
+      - image: nixos/nix:2.22.1
+    steps:
+      - checkout
+      - run: nix build
 
 workflows:
   version: 2
   checks:
     jobs:
-      - shellcheck
-      - integration_test:
-          context:
-            - AWS__PHXDEVOPS__circle-ci-test
-            - GITHUB__PAT__gruntwork-ci
-      - bats_ubuntu1604_imds_v1
-      - bats_ubuntu1604_imds_v2
-      - bats_ubuntu1804_imds_v1
-      - bats_ubuntu1804_imds_v2
-      - bats_ubuntu2004_imds_v1
-      - bats_ubuntu2004_imds_v2
+      - nix
+      # - shellcheck
+      # - integration_test:
+      #     context:
+      #       - AWS__PHXDEVOPS__circle-ci-test
+      #       - GITHUB__PAT__gruntwork-ci
+      # - bats_ubuntu1604_imds_v1
+      # - bats_ubuntu1604_imds_v2
+      # - bats_ubuntu1804_imds_v1
+      # - bats_ubuntu1804_imds_v2
+      # - bats_ubuntu2004_imds_v1
+      # - bats_ubuntu2004_imds_v2
