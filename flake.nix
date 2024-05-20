@@ -2,52 +2,59 @@
   description = "bash-commons via nix flakes";
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
-  outputs = inputs @ {
-    flake-parts,
-    self,
-    ...
-  }:
-    flake-parts.lib.mkFlake {inherit inputs;} {
-      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
-      perSystem = {
-        config,
-        self',
-        inputs',
-        pkgs,
-        system,
-        ...
-      }: {
-        formatter = pkgs.alejandra;
-        packages.default = pkgs.stdenvNoCC.mkDerivation rec {
-          pname = "bash-commons";
-          version = builtins.toString (self.shortRev or self.dirtyShortRev or self.lastModified or "unknown");
-          src = ./modules/bash-commons/src;
-          phases = ["installPhase" "fixupPhase"];
-          installPhase = ''
-            mkdir -p $out/bin
-            cp $src/array.sh $out/bin/array.sh
-            cp $src/assert.sh $out/bin/assert.sh
-            cp $src/file.sh $out/bin/file.sh
-            cp $src/log.sh $out/bin/log.sh
-            cp $src/string.sh $out/bin/string.sh
-            cp $src/string.sh $out/bin/os.sh
+  outputs =
+    inputs@{ flake-parts, self, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
+      perSystem =
+        {
+          config,
+          self',
+          inputs',
+          pkgs,
+          system,
+          ...
+        }:
+        {
+          formatter = pkgs.nixfmt-rfc-style;
+          packages = {
+            default =
+              # if not darwin system then regex an
+              let
+                filter = if pkgs.stdenv.isLinux then '''' else ''| grep --invert -E "os|ubuntu" '';
+              in
+              # no need for c(pp) compiler
+              pkgs.stdenvNoCC.mkDerivation rec {
+                pname = "bash-commons";
+                version = builtins.toString (self.shortRev or self.dirtyShortRev or self.lastModified or "unknown");
+                src = ./modules/bash-commons/src;
+                phases = [
+                  "installPhase"
+                  "fixupPhase"
+                ];
+                installPhase = ''
+                  mkdir -p $out/bin
+                  find $src -type f ${filter} | xargs -I{} cp {} $out/bin/
+                  chmod +x $out/bin/*.sh
+                '';
+                doCheck = false;
+              };
 
-            chmod +x $out/bin/array.sh
-            chmod +x $out/bin/assert.sh
-            chmod +x $out/bin/file.sh
-            chmod +x $out/bin/log.sh
-            chmod +x $out/bin/string.sh
-            chmod +x $out/bin/os.sh
-          '';
-
-          doCheck = false;
+            # run this to make universal check
+            check = pkgs.writeScriptBin "check" ''
+              nix flake check --print-build-logs --show-trace --no-build --debug --verbose --all-systems
+              nix build
+            '';
+          };
+          devShells.default = pkgs.mkShell { buildInputs = [ self'.packages.default ]; };
         };
-        devShells.default = pkgs.mkShell {
-          buildInputs = [self'.packages.default];
-        };
-      };
     };
 }
