@@ -27,7 +27,7 @@
           formatter = pkgs.nixfmt-rfc-style;
           packages = {
             default =
-              # if not darwin system then regex an
+              # filter out linux from mac
               let
                 filter = if pkgs.stdenv.isLinux then '''' else ''| grep --invert -E "os|ubuntu" '';
               in
@@ -48,7 +48,7 @@
                 doCheck = false;
               };
 
-            # run this to make universal check
+            # run this to make universal check of nix flake
             check = pkgs.writeScriptBin "check" ''
               nix flake check --print-build-logs --show-trace --no-build --debug --verbose --all-systems
               nix build
