@@ -6,6 +6,17 @@
 # See also: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html for info
 # on the metadata endpoint at 169.254.169.254.
 
+# Detect if the instance is using IMDSv2 or if it is using IMDSv1 still.
+# Users can always specify the version of the Instance Metadata Service they want bash-commons
+# to consult by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION
+curl http://169.254.169.254/latest
+finish_code=$(echo $?)
+if [ ${finish_code} == 0 ]; then
+  default_instance_metadata_version="1"
+elif [ ${finish_code} == 1 ]; then
+  default_instance_metadata_version="2"
+fi
+
 # The AWS EC2 Instance Metadata endpoint
 readonly metadata_endpoint="http://169.254.169.254/latest"
 # The AWS EC2 Instance Metadata dynamic endpoint
@@ -17,8 +28,6 @@ readonly three_hours_in_s=10800
 # A convenience variable representing 6 hours, which is the maximum configurable session duration when requesting
 # a token from IMDSv2
 readonly six_hours_in_s=21600
-# By default, we use Instance Metadata service version 1. Although version 2 is preferred, version 1 is "fully secure" according to Amazon. We'll continue defaulting to version 1 as long as we're updating our dependent modules to take advantage of this new functionality in bash-commons. Once we've completed our migration, we will begin defaulting to version 2. Users can always specify the version of the Instance Metadata Service they want bash-commons to consult by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION
-default_instance_metadata_version="1"
 
 # shellcheck source=./modules/bash-commons/src/assert.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
