@@ -25,8 +25,11 @@ readonly six_hours_in_s=21600
 # "optional" = both v1 and v2, or "required" = v2 only).  All new instances support v2 now.
 curl -s -o /dev/null $metadata_endpoint
 finish_code=$(echo $?)
-if [ ${finish_code} == 0 ]; then
+if [ ${finish_code} -eq 0 ]; then
   default_instance_metadata_version="1"
+elif [ ${finish_code} -eq 7 ]; then
+  echo "IMDS endpoint connection refused."
+  default_instance_metadata_version="0"
 else
   default_instance_metadata_version="2"
 fi
