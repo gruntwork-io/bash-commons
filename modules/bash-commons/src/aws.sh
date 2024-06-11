@@ -17,8 +17,17 @@ readonly three_hours_in_s=10800
 # A convenience variable representing 6 hours, which is the maximum configurable session duration when requesting
 # a token from IMDSv2
 readonly six_hours_in_s=21600
-# By default, we use Instance Metadata service version 1. Although version 2 is preferred, version 1 is "fully secure" according to Amazon. We'll continue defaulting to version 1 as long as we're updating our dependent modules to take advantage of this new functionality in bash-commons. Once we've completed our migration, we will begin defaulting to version 2. Users can always specify the version of the Instance Metadata Service they want bash-commons to consult by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION
-default_instance_metadata_version="1"
+# By default, we check if IMDSv2 is required and we will use it if so. If not, we fall back to IMDSv1. 
+# Users can always specify the version of the Instance Metadata Service they want bash-commons to consult 
+# by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION
+IMDSv2_CHECK=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/placement/region)
+if [[ "$IMDSv2_CHECK" -eq 200 ]]; then
+	IMDS_VER="1"
+else
+	IMDS_VER="2"
+fi
+default_instance_metadata_version="$IMDS_VER"
+
 
 # shellcheck source=./modules/bash-commons/src/assert.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
@@ -30,7 +39,8 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 # specific threat vectors. Read more at:
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
 #
-# If you prefer to use Instance Metadata service version 2, you can do so by setting the environment variable:
+# The Instance Metadata service version will be automatically detected and defaults to 2 when required. 
+# If you prefer to set a specific version, you can do so by setting the environment variable:
 # export GRUNTWORK_BASH_COMMONS_IMDSV="2"
 function aws_get_instance_metadata_version_in_use {
   using=${GRUNTWORK_BASH_COMMONS_IMDS_VERSION:-$default_instance_metadata_version}
@@ -49,8 +59,9 @@ function aws_get_instance_metadata_version_in_use {
 # This is due to the fact that we will need to operate in a split-brain mode while all our dependent
 # modules are being updated to use IMDSv2.
 #
-# Version 1 is the default, but can be overridden by setting:
-# env var GRUNTWORK_BASH_COMMONS_IMDSV=2
+# The Instance Metadata service version will be automatically detected and defaults to 2 when required.
+# If you prefer to set a specific version, you can do so by setting the environment variable:
+# export GRUNTWORK_BASH_COMMONS_IMDSV="2"
 function aws_lookup_path_in_instance_metadata {
   local -r path="$1"
   version_in_use=$(aws_get_instance_metadata_version_in_use)
@@ -65,8 +76,9 @@ function aws_lookup_path_in_instance_metadata {
 # This is due to the fact that we will need to operate in a split-brain mode while all our dependent
 # modules are being updated to use IMDSv2.
 #
-# Version 1 is the default, but can be overridden by setting:
-# env var GRUNTWORK_BASH_COMMONS_IMDSV=2
+# The Instance Metadata service version will be automatically detected and defaults to 2 when required.
+# If you prefer to set a specific version, you can do so by setting the environment variable:
+# export GRUNTWORK_BASH_COMMONS_IMDSV="2"
 function aws_lookup_path_in_instance_dynamic_data {
  local -r path="$1"
  version_in_use=$(aws_get_instance_metadata_version_in_use)
@@ -192,11 +204,9 @@ function aws_lookup_path_in_instance_dynamic_data_v2 {
 # IMDS convenience functions
 ##################################################################################
 # The following functions will use either IMDSv1 or IMDSv2, depending on the value
-# of $default_instance_metadata_version, which defaults to 1 but can be overridden
-# by setting the environment variable:
+# of $default_instance_metadata_version, which will default to the highest version
+# of IDMSv2 detected. This can be overridden by setting the environment variable:
 # export GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
-# This is because these functions call out to the shim functions that determine which
-# underlying implementation (IMDSv1 or IMDSv2) to use
 
 # Get the private IP address for this EC2 Instance
 function aws_get_instance_private_ip {
