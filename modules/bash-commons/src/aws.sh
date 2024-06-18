@@ -29,14 +29,14 @@ to_token_or_not_to_token=$(sudo curl -s -o /dev/null -X PUT ${imdsv2_token_endpo
 if [ ${to_token_or_not_to_token} -eq 0 ]; then
   default_instance_metadata_version="2"
 elif [ ${to_token_or_not_to_token} -eq 7 ]; then
-  echo "IMDS endpoint connection refused."
+  echo "Check for IMDSv2 failed. IMDS endpoint connection refused."
   default_instance_metadata_version="0"
 else
   finish_code=$(sudo curl -s -o /dev/null $metadata_endpoint; echo $?)
   if [ ${finish_code} -eq 0 ]; then
     default_instance_metadata_version="1"
   elif [ ${finish_code} -eq 7 ]; then
-    echo "IMDS endpoint connection refused."
+    echo "Check for IMDSv1 and v2 failed. IMDS endpoint connection refused."
     default_instance_metadata_version="0"
   else
     echo "IMDS endpoint connection failed for an unknown reason with error code: ${finish_code}"
