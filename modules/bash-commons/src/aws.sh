@@ -25,23 +25,25 @@ readonly six_hours_in_s=21600
 # to consult by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION
 # Defaults to IMDSv2 since that is now enabled by default on instances (IMDS only has two options,
 # "optional" = both v1 and v2, or "required" = v2 only).  All new instances support v2 now.
-to_token_or_not_to_token=$(sudo curl -s -o /dev/null -X PUT ${imdsv2_token_endpoint} -H "X-aws-ec2-metadata-token-ttl-seconds: 10"; echo $?)
-if [ ${to_token_or_not_to_token} -eq 0 ]; then
-  default_instance_metadata_version="2"
-elif [ ${to_token_or_not_to_token} -eq 7 ]; then
-  echo "Check for IMDSv2 failed. IMDS endpoint connection refused."
-  default_instance_metadata_version="0"
-else
-  finish_code=$(sudo curl -s -o /dev/null $metadata_endpoint; echo $?)
-  if [ ${finish_code} -eq 0 ]; then
-    default_instance_metadata_version="1"
-  elif [ ${finish_code} -eq 7 ]; then
-    echo "Check for IMDSv1 and v2 failed. IMDS endpoint connection refused."
-    default_instance_metadata_version="0"
-  else
-    echo "IMDS endpoint connection failed for an unknown reason with error code: ${finish_code}"
-    default_instance_metadata_version="0"
-  fi
+if [[ -z "$GRUNTWORK_BASH_COMMONS_IMDS_VERSION" ]]; then
+    to_token_or_not_to_token=$(sudo curl -s -o /dev/null -X PUT ${imdsv2_token_endpoint} -H "X-aws-ec2-metadata-token-ttl-seconds: 10"; echo $?)
+    if [ ${to_token_or_not_to_token} -eq 0 ]; then
+      default_instance_metadata_version="2"
+    elif [ ${to_token_or_not_to_token} -eq 7 ]; then
+      echo "Check for IMDSv2 failed. IMDS endpoint connection refused."
+      default_instance_metadata_version="0"
+    else
+      finish_code=$(sudo curl -s -o /dev/null $metadata_endpoint; echo $?)
+      if [ ${finish_code} -eq 0 ]; then
+        default_instance_metadata_version="1"
+      elif [ ${finish_code} -eq 7 ]; then
+        echo "Check for IMDSv1 and v2 failed. IMDS endpoint connection refused."
+        default_instance_metadata_version="0"
+      else
+        echo "IMDS endpoint connection failed for an unknown reason with error code: ${finish_code}"
+        default_instance_metadata_version="0"
+      fi
+    fi
 fi
 
 # shellcheck source=./modules/bash-commons/src/assert.sh
