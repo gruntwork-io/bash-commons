@@ -12,13 +12,39 @@ readonly metadata_endpoint="http://169.254.169.254/latest"
 readonly metadata_dynamic_endpoint="http://169.254.169.254/latest/dynamic"
 # The AWS EC2 Instance document endpoint
 readonly instance_identity_endpoint="http://169.254.169.254/latest/dynamic/instance-identity/document"
+# The AWS EC2 Instance IMDSv2 Token endpoint
+readonly imdsv2_token_endpoint="http://169.254.169.254/latest/api/token"
 # A convenience variable representing 3 hours, for use in requesting a token from the IMDSv2 endpoint
 readonly three_hours_in_s=10800
 # A convenience variable representing 6 hours, which is the maximum configurable session duration when requesting
 # a token from IMDSv2
 readonly six_hours_in_s=21600
-# By default, we use Instance Metadata service version 1. Although version 2 is preferred, version 1 is "fully secure" according to Amazon. We'll continue defaulting to version 1 as long as we're updating our dependent modules to take advantage of this new functionality in bash-commons. Once we've completed our migration, we will begin defaulting to version 2. Users can always specify the version of the Instance Metadata Service they want bash-commons to consult by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION
-default_instance_metadata_version="1"
+
+# Detect if the instance is using IMDSv2 or if it is using IMDSv1 still.
+# Users can always specify the version of the Instance Metadata Service they want bash-commons
+# to consult by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION
+# Defaults to IMDSv2 since that is now enabled by default on instances (IMDS only has two options,
+# "optional" = both v1 and v2, or "required" = v2 only).  All new instances support v2 now.
+if [[ -z "$GRUNTWORK_BASH_COMMONS_IMDS_VERSION" ]]; then
+    to_token_or_not_to_token=$(sudo curl -s -o /dev/null -X PUT ${imdsv2_token_endpoint} -H "X-aws-ec2-metadata-token-ttl-seconds: 10"; echo $?)
+    if [ ${to_token_or_not_to_token} -eq 0 ]; then
+      default_instance_metadata_version="2"
+    elif [ ${to_token_or_not_to_token} -eq 7 ]; then
+      echo "Check for IMDSv2 failed. IMDS endpoint connection refused."
+      default_instance_metadata_version="0"
+    else
+      finish_code=$(sudo curl -s -o /dev/null $metadata_endpoint; echo $?)
+      if [ ${finish_code} -eq 0 ]; then
+        default_instance_metadata_version="1"
+      elif [ ${finish_code} -eq 7 ]; then
+        echo "Check for IMDSv1 and v2 failed. IMDS endpoint connection refused."
+        default_instance_metadata_version="0"
+      else
+        echo "IMDS endpoint connection failed for an unknown reason with error code: ${finish_code}"
+        default_instance_metadata_version="0"
+      fi
+    fi
+fi
 
 # shellcheck source=./modules/bash-commons/src/assert.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
@@ -30,8 +56,10 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
 # specific threat vectors. Read more at:
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
 #
-# If you prefer to use Instance Metadata service version 2, you can do so by setting the environment variable:
-# export GRUNTWORK_BASH_COMMONS_IMDS_VERSION="2"
+# The default is now version 2, but if you prefer to use Instance Metadata service version 1, you can do
+# so by setting the environment variable:
+# export GRUNTWORK_BASH_COMMONS_IMDS_VERSION="1"
+# This function will override the default based on the contents of that variable if it is set.
 function aws_get_instance_metadata_version_in_use {
   using=${GRUNTWORK_BASH_COMMONS_IMDS_VERSION:-$default_instance_metadata_version}
   assert_value_in_list "Instance Metadata service version in use" "$using" "1" "2"
@@ -49,8 +77,8 @@ function aws_get_instance_metadata_version_in_use {
 # This is due to the fact that we will need to operate in a split-brain mode while all our dependent
 # modules are being updated to use IMDSv2.
 #
-# Version 1 is the default, but can be overridden by setting:
-# env var GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
+# Version 2 is the default, but can be overridden by setting:
+# env var GRUNTWORK_BASH_COMMONS_IMDS_VERSION=1
 function aws_lookup_path_in_instance_metadata {
   local -r path="$1"
   version_in_use=$(aws_get_instance_metadata_version_in_use)
@@ -65,8 +93,8 @@ function aws_lookup_path_in_instance_metadata {
 # This is due to the fact that we will need to operate in a split-brain mode while all our dependent
 # modules are being updated to use IMDSv2.
 #
-# Version 1 is the default, but can be overridden by setting:
-# env var GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
+# Version 2 is the default, but can be overridden by setting:
+# env var GRUNTWORK_BASH_COMMONS_IMDS_VERSION=1
 function aws_lookup_path_in_instance_dynamic_data {
  local -r path="$1"
  version_in_use=$(aws_get_instance_metadata_version_in_use)
@@ -84,8 +112,8 @@ function aws_lookup_path_in_instance_dynamic_data {
 # meaning that they do not retrieve or present the tokens returned and expected by
 # IMDSv2
 
-# This function uses Instance Metadata service version 1. It requests the supplied path from the endpoint, but
-# does not use the token-based authorization scheme.
+# This function uses Instance Metadata service version 1. It requests the supplied
+# path from the endpoint, but does not use the token-based authorization scheme.
 function aws_lookup_path_in_instance_metadata_v1 {
   local -r path="$1"
   curl --silent --show-error --location "http://169.254.169.254/latest/meta-data/$path/"
@@ -103,9 +131,10 @@ function aws_lookup_path_in_instance_dynamic_data_v1 {
 # The following functions use IMDSv2, meaning they request and present IMDSv2
 # tokens when making requests to IMDS.
 
-# This function calls the Instance Metadata Service endpoint version 2 (IMDSv2) which is hardened against certain attack vectors.
-# The endpoint returns a token that must be supplied on subsequent requests. This implementation fetches a new token
-# for each transaction. See:
+# This function calls the Instance Metadata Service endpoint version 2 (IMDSv2)
+# which is hardened against certain attack vectors. The endpoint returns a token
+# that must be supplied on subsequent requests. This implementation fetches a new
+# token for each transaction. See:
 # https://aws.amazon.com/blogs/security/defense-in-depth-open-firewalls-reverse-proxies-ssrf-vulnerabilities-ec2-instance-metadata-service/
 # for more information
 function ec2_metadata_http_get {
@@ -119,8 +148,8 @@ function ec2_metadata_http_get {
     --silent --location --fail --show-error
 }
 
-# This function uses Instance Metadata service version 2. It requests the supplied path from the
-# dynamic endpoint.
+# This function uses Instance Metadata service version 2. It requests the supplied
+# path from the dynamic endpoint.
 function ec2_metadata_dynamic_http_get {
   assert_not_empty "path" "$1"
   local -r path="$1"
@@ -174,14 +203,15 @@ function configure_imdsv2_ttl {
  echo "$ttl"
 }
 
-# This function uses Instance Metadata version 2.It requests the supplied path from the endpoint, leveraging
-# the token-based authorization scheme.
+# This function uses Instance Metadata version 2.It requests the supplied path from
+# the endpoint, leveraging the token-based authorization scheme.
 function aws_lookup_path_in_instance_metadata_v2 {
  assert_not_empty "path" "$path" "Must specify a metadata path to request"
  ec2_metadata_http_get "$path"
 }
 
-# This function uses Instance Metadata version 2. It requests the specified path from the IMDS dynamic endpont
+# This function uses Instance Metadata version 2. It requests the specified path from
+# the IMDS dynamic endpont
 function aws_lookup_path_in_instance_dynamic_data_v2 {
  local -r path="$1"
  assert_not_empty "path" "$path" "Must specify a metadata dynamic path to request"

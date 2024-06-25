@@ -73,9 +73,12 @@ sudo chown -R "my-os-username:my-os-group" /opt/gruntwork/bash-commons
 
 ## Instance Metadata Service versions
 
-`bash-commons` supports both Instance Metadata Service (IMDS) version 1 and 2. Gruntwork and AWS both recommend using version 2 of the Instance Metadata Service whenever possible. Although version 1 is still supported and considered fully secure by AWS, version 2 has been specially hardened against specific threat vectors and is therefore preferable.
+`bash-commons` supports both Instance Metadata Service (IMDS) version 1 and 2. Gruntwork and AWS both recommend using version 2 of the Instance Metadata Service whenever possible. Although version 1 is still supported and considered fully secure by AWS, version 2 has been specially hardened against specific threat vectors and is therefore preferable.  Version 2 is now the default since all new instances support it by default.
 
 To understand more about Instance Metadata Service version 2 and its features, read [the official AWS documentation on IMDSv2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html).
+
+If you need help detecting what is still using IMDSv1 AWS has a PacketAnalyzer:
+https://github.com/aws/aws-imds-packet-analyzer
 
 There are two ways to specify the version of the Instance Metadata Service that `bash-commons` should use:
 
@@ -132,7 +135,7 @@ Here's an overview of the modules available in `bash-commons`:
   Instance Metadata](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html). These thin
   wrappers give you a shorthand way to fetch certain information (e.g., information about an EC2 Instance, such as its
   private IP, public IP, Instance ID, and region). Moreover, you can swap out `aws.sh` with a version that returns mock
-  data to make it easy to run your code locally (e.g., in Docker) and to run unit tests.
+  data to make it easy to run your code locally (e.g., in Docker) and to run unit tests. This requires IMDS to be enabled.
 
 * `aws-wrapper.sh`: A collection of "high level" wrappers for the [AWS CLI](https://aws.amazon.com/cli/) and [EC2
   Instance Metadata](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) to simplify common
