@@ -22,11 +22,11 @@ function os_is_ubuntu {
   grep -q "Ubuntu $version" /etc/*release
 }
 
-# Returns true (0) if this is a CentOS server at the given version or false (1) otherwise. The version number
+# Returns true (0) if this is a CentOS/CentOS Stream server at the given version or false (1) otherwise. The version number
 # can use regex. If you don't care about the version, leave it unspecified.
 function os_is_centos {
   local -r version="$1"
-  grep -q "CentOS Linux release $version" /etc/*release
+  grep -q "CentOS Linux release $version" /etc/*release || grep -q "CentOS Stream release $version" /etc/*release 
 }
 
 # Returns true (0) if this is a RedHat server at the given version or false (1) otherwise. The version number
