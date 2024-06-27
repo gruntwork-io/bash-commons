@@ -1,4 +1,6 @@
 version: 2
+orbs:
+  nix: eld/nix@
 jobs:
   shellcheck:
     machine: true
@@ -66,6 +68,12 @@ jobs:
     steps:
       - checkout
       - run: docker-compose up --exit-code-from bats_ubuntu2004_imds_v2 bats_ubuntu2004_imds_v2
+  nixcheck:
+    machine: true
+    steps:
+      - checkout
+      - nix/install
+      - run: nix run .#check --option "flakes commands" --accept-flake-config
 
 workflows:
   version: 2
@@ -82,3 +90,4 @@ workflows:
       - bats_ubuntu1804_imds_v2
       - bats_ubuntu2004_imds_v1
       - bats_ubuntu2004_imds_v2
+      - nixcheck
