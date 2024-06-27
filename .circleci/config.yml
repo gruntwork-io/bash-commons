@@ -23,35 +23,6 @@ jobs:
           path: /tmp/logs
       - store_test_results:
           path: /tmp/logs
-  bats_ubuntu1604_imds_v1:
-    # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
-    # we have to use the machine executor instead.
-    machine: true
-    steps:
-      - checkout
-      - run: docker-compose up --exit-code-from bats_ubuntu1604_imds_v1 bats_ubuntu1604_imds_v1
-  bats_ubuntu1604_imds_v2:
-    # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
-    # we have to use the machine executor instead.
-    machine: true
-    steps:
-      - checkout
-      - run: docker-compose up --exit-code-from bats_ubuntu1604_imds_v2 bats_ubuntu1604_imds_v2
-
-  bats_ubuntu1804_imds_v1:
-    # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
-    # we have to use the machine executor instead.
-    machine: true
-    steps:
-      - checkout
-      - run: docker-compose up --exit-code-from bats_ubuntu1804_imds_v1 bats_ubuntu1804_imds_v1
-  bats_ubuntu1804_imds_v2:
-    # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
-    # we have to use the machine executor instead.
-    machine: true
-    steps:
-      - checkout
-      - run: docker-compose up --exit-code-from bats_ubuntu1804_imds_v2 bats_ubuntu1804_imds_v2
   bats_ubuntu2004_imds_v1:
     # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
     # we have to use the machine executor instead.
@@ -66,6 +37,34 @@ jobs:
     steps:
       - checkout
       - run: docker-compose up --exit-code-from bats_ubuntu2004_imds_v2 bats_ubuntu2004_imds_v2
+  bats_ubuntu2004_no_imds:
+    # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
+    # we have to use the machine executor instead.
+    machine: true
+    steps:
+      - checkout
+      - run: docker-compose up --exit-code-from bats_ubuntu2004_no_imds bats_ubuntu2004_no_imds
+  bats_ubuntu2204_imds_v1:
+    # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
+    # we have to use the machine executor instead.
+    machine: true
+    steps:
+      - checkout
+      - run: docker-compose up --exit-code-from bats_ubuntu2204_imds_v1 bats_ubuntu2204_imds_v1
+  bats_ubuntu2204_imds_v2:
+    # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
+    # we have to use the machine executor instead.
+    machine: true
+    steps:
+      - checkout
+      - run: docker-compose up --exit-code-from bats_ubuntu2204_imds_v2 bats_ubuntu2204_imds_v2
+  bats_ubuntu2204_no_imds:
+    # We need to run Docker Compose with privileged settings, which isn't supported by CircleCI's Docker executor, so
+    # we have to use the machine executor instead.
+    machine: true
+    steps:
+      - checkout
+      - run: docker-compose up --exit-code-from bats_ubuntu2204_no_imds bats_ubuntu2204_no_imds
 
 workflows:
   version: 2
@@ -76,9 +75,9 @@ workflows:
           context:
             - AWS__PHXDEVOPS__circle-ci-test
             - GITHUB__PAT__gruntwork-ci
-      - bats_ubuntu1604_imds_v1
-      - bats_ubuntu1604_imds_v2
-      - bats_ubuntu1804_imds_v1
-      - bats_ubuntu1804_imds_v2
       - bats_ubuntu2004_imds_v1
       - bats_ubuntu2004_imds_v2
+      - bats_ubuntu2004_no_imds
+      - bats_ubuntu2204_imds_v1
+      - bats_ubuntu2204_imds_v2
+      - bats_ubuntu2204_no_imds
