@@ -25,7 +25,7 @@ readonly six_hours_in_s=21600
 # to consult by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION
 # Defaults to IMDSv2 since that is now enabled by default on instances (IMDS only has two options,
 # "optional" = both v1 and v2, or "required" = v2 only).  All new instances support v2 now.
-if [[ -z "$GRUNTWORK_BASH_COMMONS_IMDS_VERSION" ]]; then
+if [[ -n "${GRUNTWORK_BASH_COMMONS_IMDS_VERSION}" ]]; then
     to_token_or_not_to_token=$(sudo curl -s -o /dev/null -X PUT ${imdsv2_token_endpoint} -H "X-aws-ec2-metadata-token-ttl-seconds: 10"; echo $?)
     if [ ${to_token_or_not_to_token} -eq 0 ]; then
       default_instance_metadata_version="2"
