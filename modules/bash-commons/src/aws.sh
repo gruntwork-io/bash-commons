@@ -75,11 +75,9 @@ function aws_check_metadata_availability {
 # Check if IMDS Metadata Endpoint is available.  This is required for most of the functions in this script.
 imds_available=$(aws_check_metadata_availability)
 if [[ "${imds_available}" == 9 ]]; then
-  echo "No IMDS Version declared.  This should not be possible."
-  exit 1
+  echo "No IMDS Version declared.  This should not be possible because this script sets a default of 2.  Check to see if it was unset somewhere."
 elif [[ "${imds_available}" == 0 ]]; then
   echo "IMDS Metadata Endpoint is not available.  Script cannot continue without the Endpoint."
-  exit 1
 fi
 
 # AWS and Gruntwork recommend use of the Instance Metadata Service version 2 whenever possible. Although
