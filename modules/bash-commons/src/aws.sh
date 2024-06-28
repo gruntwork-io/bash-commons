@@ -20,36 +20,67 @@ readonly three_hours_in_s=10800
 # a token from IMDSv2
 readonly six_hours_in_s=21600
 
-# Detect if the instance is using IMDSv2 or if it is using IMDSv1 still.
-# Users can always specify the version of the Instance Metadata Service they want bash-commons
-# to consult by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION
-# Defaults to IMDSv2 since that is now enabled by default on instances (IMDS only has two options,
-# "optional" = both v1 and v2, or "required" = v2 only).  All new instances support v2 now.
-if [[ -n "${GRUNTWORK_BASH_COMMONS_IMDS_VERSION}" ]]; then
-    to_token_or_not_to_token=$(sudo curl -s -o /dev/null -X PUT ${imdsv2_token_endpoint} -H "X-aws-ec2-metadata-token-ttl-seconds: 10"; echo $?)
-    if [ ${to_token_or_not_to_token} -eq 0 ]; then
-      default_instance_metadata_version="2"
-    elif [ ${to_token_or_not_to_token} -eq 7 ]; then
-      echo "Check for IMDSv2 failed. IMDS endpoint connection refused."
-      default_instance_metadata_version="0"
-    else
-      finish_code=$(sudo curl -s -o /dev/null $metadata_endpoint; echo $?)
-      if [ ${finish_code} -eq 0 ]; then
-        default_instance_metadata_version="1"
-      elif [ ${finish_code} -eq 7 ]; then
-        echo "Check for IMDSv1 and v2 failed. IMDS endpoint connection refused."
-        default_instance_metadata_version="0"
-      else
-        echo "IMDS endpoint connection failed for an unknown reason with error code: ${finish_code}"
-        default_instance_metadata_version="0"
-      fi
-    fi
-fi
-
 # shellcheck source=./modules/bash-commons/src/assert.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert.sh"
 # shellcheck source=./modules/bash-commons/src/log.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/log.sh"
+
+# Set variable to an empty string if it is unbound to prevent "unbound variable".
+export GRUNTWORK_BASH_COMMONS_IMDS_VERSION=${GRUNTWORK_BASH_COMMONS_IMDS_VERSION-}
+# Set default variable to version "2" if nothing is set.
+export default_instance_metadata_version=${default_instance_metadata_version-"2"}
+
+# Detect if the instance has IMDS available and return what version is available.
+# Users can always specify the version of the Instance Metadata Service they want bash-commons
+# to consult by setting the environment variable GRUNTWORK_BASH_COMMONS_IMDS_VERSION.
+# If set, GRUNTWORK_BASH_COMMONS_IMDS_VERSION will override default_instance_metadata_version.
+# Defaults to IMDSv2 since that is now available by default on instances.
+function aws_check_metadata_availability {
+  version_to_check=${GRUNTWORK_BASH_COMMONS_IMDS_VERSION:-$default_instance_metadata_version}
+  if [[ "${version_to_check}" == "" ]]; then
+    echo "No IMDS version specified, unable to check metadata availability."
+    return 9
+  fi
+
+  if [[ "${version_to_check}" == "2" ]]; then
+    curl_exit_code=$(sudo curl -s -o /dev/null -X PUT ${imdsv2_token_endpoint} -H "X-aws-ec2-metadata-token-ttl-seconds: 10"; echo $?)
+    if [ ${curl_exit_code} -eq 0 ]; then
+      default_instance_metadata_version="2"
+    elif [ ${curl_exit_code} -eq 7 ]; then
+      echo "Check for IMDSv2 failed. IMDS endpoint connection refused."
+      default_instance_metadata_version="0"
+    else
+      echo "IMDS endpoint connection failed for an unknown reason with error code: ${finish_code}"
+      default_instance_metadata_version="0"
+    fi
+  fi
+
+  if [[ "${version_to_check}" == "1" ]]; then
+    curl_exit_code=$(sudo curl -s -o /dev/null $metadata_endpoint; echo $?)
+    if [ ${curl_exit_code} -eq 0 ]; then
+      default_instance_metadata_version="1"
+    elif [ ${curl_exit_code} -eq 7 ]; then
+      echo "Check for IMDSv1 and v2 failed. IMDS endpoint connection refused."
+      default_instance_metadata_version="0"
+    else
+      echo "IMDS endpoint connection failed for an unknown reason with error code: ${finish_code}"
+      default_instance_metadata_version="0"
+    fi
+  fi
+  
+  # returns "2" if IMDSv2 is available, "1" if v2 is not but v1 is, returns "0" if neither are available (i.e. endpoint is disabled or blocked)
+  echo $default_instance_metadata_version
+}
+
+# Check if IMDS Metadata Endpoint is available.  This is required for most of the functions in this script.
+imds_available=$(aws_check_metadata_availability)
+if [[ "${imds_available}" == 9 ]]; then
+  echo "No IMDS Version declared.  This should not be possible."
+  exit 1
+elif [[ "${imds_available}" == 0 ]]; then
+  echo "IMDS Metadata Endpoint is not available.  Script cannot continue without the Endpoint."
+  exit 1
+fi
 
 # AWS and Gruntwork recommend use of the Instance Metadata Service version 2 whenever possible. Although
 # IMDSv1 is still supported and considered fully secure by AWS, IMDSv2 features special hardening against
