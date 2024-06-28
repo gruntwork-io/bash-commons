@@ -8,58 +8,6 @@ services:
       - ./:/usr/local/src/bash-commons
     working_dir: /usr/local/src/bash-commons/.circleci
     command: ./shellcheck.sh
-  bats_ubuntu1604_imds_v1:
-    build:
-      context: ./
-      dockerfile: Dockerfile.ubuntu16.04.bats
-    volumes:
-      # Mount all the files so you have "hot reload" of all changes from the host
-      - ./:/usr/local/src/bash-commons
-    working_dir: /usr/local/src/bash-commons
-    command: bats test
-    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
-    privileged: true
-    # We intentionally omit the GRUNTWORK_BASH_COMMONS_IMDS_VERSION env var here to ensure the default behavior works as expected
-  bats_ubuntu1604_imds_v2:
-    build:
-      context: ./
-      dockerfile: Dockerfile.ubuntu16.04.bats
-    volumes:
-      # Mount all the files so you have "hot reload" of all changes from the host
-      - ./:/usr/local/src/bash-commons
-    working_dir: /usr/local/src/bash-commons
-    command: bats test
-    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
-    privileged: true
-    environment:
-      # Signal to bash-commons module to use Instance Metadata Service version 2
-      - GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
-  bats_ubuntu1804_imds_v1:
-    build:
-      context: ./
-      dockerfile: Dockerfile.ubuntu18.04.bats
-    volumes:
-      # Mount all the files so you have "hot reload" of all changes from the host
-      - ./:/usr/local/src/bash-commons
-    working_dir: /usr/local/src/bash-commons
-    command: bats test
-    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
-    privileged: true
-    # We intentionally omit the GRUNTWORK_BASH_COMMONS_IMDS_VERSION env var here to ensure the default behavior works as intended
-  bats_ubuntu1804_imds_v2:
-    build:
-      context: ./
-      dockerfile: Dockerfile.ubuntu18.04.bats
-    volumes:
-      # Mount all the files so you have "hot reload" of all changes from the host
-      - ./:/usr/local/src/bash-commons
-    working_dir: /usr/local/src/bash-commons
-    command: bats test
-    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
-    privileged: true
-    environment:
-      # Signal to bash-commons module to use Instance Metadata Service version 2
-      - GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
   bats_ubuntu2004_imds_v1:
     build:
       context: ./
@@ -88,3 +36,53 @@ services:
     environment:
       # Signal to bash-commons module to use Instance Metadata Service version 2
       - GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
+  bats_ubuntu2004_no_imds:
+    build:
+      context: ./
+      dockerfile: Dockerfile.ubuntu20.04.bats
+    volumes:
+      # Mount all the files so you have "hot reload" of all changes from the host
+      - ./:/usr/local/src/bash-commons
+    working_dir: /usr/local/src/bash-commons
+    command: bats test
+    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
+    privileged: true
+  bats_ubuntu2204_imds_v1:
+    build:
+      context: ./
+      dockerfile: Dockerfile.ubuntu22.04.bats
+    volumes:
+      # Mount all the files so you have "hot reload" of all changes from the host
+      - ./:/usr/local/src/bash-commons
+    working_dir: /usr/local/src/bash-commons
+    command: bats test
+    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
+    privileged: true
+    environment:
+      # Signal to bash-commons module to use Instance Metadata Service version 1
+      - GRUNTWORK_BASH_COMMONS_IMDS_VERSION=1
+  bats_ubuntu2204_imds_v2:
+    build:
+      context: ./
+      dockerfile: Dockerfile.ubuntu22.04.bats
+    volumes:
+      # Mount all the files so you have "hot reload" of all changes from the host
+      - ./:/usr/local/src/bash-commons
+    working_dir: /usr/local/src/bash-commons
+    command: bats test
+    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
+    privileged: true
+    environment:
+      # Signal to bash-commons module to use Instance Metadata Service version 2
+      - GRUNTWORK_BASH_COMMONS_IMDS_VERSION=2
+  bats_ubuntu2204_no_imds:
+    build:
+      context: ./
+      dockerfile: Dockerfile.ubuntu22.04.bats
+    volumes:
+      # Mount all the files so you have "hot reload" of all changes from the host
+      - ./:/usr/local/src/bash-commons
+    working_dir: /usr/local/src/bash-commons
+    command: bats test
+    # Necessary so we can run a mock EC2 metadata service on port 80 on a special IP
+    privileged: true
