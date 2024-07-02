@@ -21,7 +21,7 @@ function print_usage {
   echo
   echo "Usage: install.sh [options]"
   echo
-  echo "This script is used by the Gruntwork Installter to install the bash-commons library."
+  echo "This script is used by the Gruntwork Installer to install the bash-commons library."
   echo
   echo "Options:"
   echo
