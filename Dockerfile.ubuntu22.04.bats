@@ -1,13 +1,9 @@
-FROM ubuntu:16.04
+FROM ubuntu:22.04
 MAINTAINER Gruntwork <info@gruntwork.io>
 
 # Install basic dependencies
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get install -y vim git python-pip jq sudo curl libffi-dev python3-dev && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
-    update-alternatives --config python && \
-    curl https://bootstrap.pypa.io/pip/3.5/get-pip.py -o /tmp/get-pip.py && \
-    python /tmp/get-pip.py
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y git vim python3-pip jq sudo curl libffi-dev python3-dev
 
 # Install Bats
 RUN git clone https://github.com/bats-core/bats-core.git /tmp/bats-core && \
@@ -15,13 +11,14 @@ RUN git clone https://github.com/bats-core/bats-core.git /tmp/bats-core && \
     rm -r /tmp/bats-core
 
 # Upgrade pip
-RUN pip install -U pip
+RUN pip3 install -U pip
 
 # Install AWS CLI
-RUN pip install awscli --upgrade --user
+RUN pip3 install awscli --upgrade --user
 
 # Install moto: https://github.com/spulec/moto
-RUN pip install flask moto moto[server] networkx==2.2
+# Lock cfn-lint and pysistent to last known working versions
+RUN pip3 install flask moto moto[server] cfn-lint pyrsistent
 
 # Install tools we'll need to create a mock EC2 metadata server
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y net-tools iptables
