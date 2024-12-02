@@ -33,7 +33,7 @@ function os_is_centos {
 # can use regex. If you don't care about the version, leave it unspecified.
 function os_is_redhat {
   local -r version="$1"
-  grep -q "Red Hat Enterprise Linux Server release $version" /etc/*release
+  grep -q "Red Hat Enterprise Linux release $version" /etc/*release || grep -q "Red Hat Enterprise Linux Server release $version" /etc/*release
 }
 
 
