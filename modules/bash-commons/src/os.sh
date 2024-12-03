@@ -30,10 +30,10 @@ function os_is_centos {
 }
 
 # Returns true (0) if this is a RedHat server at the given version or false (1) otherwise. The version number
-# can use regex. If you don't care about the version, leave it unspecified.
+# can use regex. If you don't care about the version, leave it unspecified.  RedHat 8+ removed the word "Server".
 function os_is_redhat {
   local -r version="$1"
-  grep -q "Red Hat Enterprise Linux Server release $version" /etc/*release
+  grep -q "Red Hat Enterprise Linux release $version" /etc/*release || grep -q "Red Hat Enterprise Linux Server release $version" /etc/*release
 }
 
 
